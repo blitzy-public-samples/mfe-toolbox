@@ -32,7 +32,7 @@ def r2phi(R: np.ndarray) -> np.ndarray:
     Returns
     -------
     phi : numpy.ndarray
-        K(K-1)/2 vector of angles in [0, 2*pi].
+        K(K-1)/2 vector of angles in [0, pi].
 
     Raises
     ------
@@ -48,8 +48,9 @@ def r2phi(R: np.ndarray) -> np.ndarray:
 
     MATLAB equivalent: ``phi = r2phi(R)`` from utility/r2phi.m.
 
-    It is necessary to invert both cos and sin to identify where in [0, 2*pi]
-    the angle is (see comment in r2phi.m:19 — FIXME note in original source).
+    The MATLAB source (r2phi.m:19) contains a FIXME note about inverting both
+    cos and sin for full-circle angle identification, but the current
+    implementation using arccos produces values in [0, pi] only.
 
     References
     ----------

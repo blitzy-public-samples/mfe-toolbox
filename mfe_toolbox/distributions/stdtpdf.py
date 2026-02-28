@@ -12,11 +12,11 @@ MATLAB Source Reference
 -----------------------
 Migrated from ``distributions/stdtpdf.m`` (MFE Toolbox v4.0, Kevin Sheppard).
 
-**Bug Fix Note**: The original MATLAB source (stdtpdf.m) contains a bug on line 60
-where ``(x-mu)`` is used after ``x`` has already been demeaned on line 53
-(``x = x - mu``). This effectively double-subtracts mu. The Python version
-corrects this by using ``x`` (already demeaned) in the PDF formula instead of
-``(x - mu)``.
+**MATLAB Parity Note**: The original MATLAB source (stdtpdf.m) demeanes ``x`` on
+line 53 (``x = x - mu``) and then uses ``(x - mu)`` again on line 60, effectively
+double-subtracting mu. This Python version reproduces the identical MATLAB behavior
+to maintain strict numerical parity (±1e-6) as required by the project rules.
+Ref: stdtpdf.m:53,60.
 
 References
 ----------
@@ -84,11 +84,11 @@ def stdtpdf(x, mu, sigma2, nu):
         \\sqrt{\\pi (\\nu-2) \\sigma^2}}
         \\left(1 + \\frac{(x - \\mu)^2}{\\sigma^2 (\\nu - 2)}\\right)^{-(\\nu+1)/2}
 
-    **MATLAB Bug Correction**: The original MATLAB implementation (stdtpdf.m)
-    demeaned ``x`` on line 53 (``x = x - mu``) but then used ``(x - mu)`` again
+    **MATLAB Parity Note**: The original MATLAB implementation (stdtpdf.m)
+    demeanes ``x`` on line 53 (``x = x - mu``) and then uses ``(x - mu)`` again
     in the PDF formula on line 60, effectively double-subtracting ``mu``. This
-    Python version correctly uses the already-demeaned ``x`` in the formula.
-    Ref: stdtpdf.m:53,60.
+    Python version reproduces the identical MATLAB behavior to maintain strict
+    numerical parity (±1e-6). Ref: stdtpdf.m:53,60.
 
     Examples
     --------
@@ -164,18 +164,18 @@ def stdtpdf(x, mu, sigma2, nu):
 
     # -----------------------------------------------------------------
     # Compute the standardized t PDF
-    # Ref: stdtpdf.m:60 — MATLAB bug: double-subtracted mu; Python correctly
-    # uses demeaned x.
+    # Ref: stdtpdf.m:60 — MATLAB uses (x-mu) after x has already been
+    # demeaned on line 53, effectively double-subtracting mu.  We reproduce
+    # this exact behavior to maintain numerical parity with MATLAB output.
     #
-    # MATLAB original (buggy):
+    # MATLAB original (line 60):
     #   y = constant ./ sqrt(pi*(nu-2)*sigma2) .* (1 + (x-mu).^2 / (sigma2*(nu-2))) .^ (-(nu+1)/2)
-    # Corrected formula (uses x which is already demeaned):
-    #   y = constant / sqrt(pi*(nu-2)*sigma2) * (1 + x^2 / (sigma2*(nu-2))) ^ (-(nu+1)/2)
+    # At this point x = x_original - mu (from line 53), so (x-mu) = x_original - 2*mu.
     # -----------------------------------------------------------------
     y = (
         constant
         / numpy.sqrt(numpy.pi * (nu - 2.0) * sigma2)
-        * (1.0 + x ** 2.0 / (sigma2 * (nu - 2.0))) ** (-(nu + 1.0) / 2.0)
+        * (1.0 + (x - mu) ** 2.0 / (sigma2 * (nu - 2.0))) ** (-(nu + 1.0) / 2.0)
     )
 
     return y

@@ -18,14 +18,14 @@ import numpy as np
 __all__ = ['newlagmatrix']
 
 
-def newlagmatrix(y, lags, include_constant=1):
+def newlagmatrix(y, lags, include_constant=0):
     """
     Construct lag matrix for time series regression.
 
     Builds a regressor matrix containing lagged values of the input series,
-    optionally prepending a constant column and/or the contemporaneous value.
-    The lag ordering matches the MATLAB original: lag 1 (most recent) first,
-    then lag 2, up to the specified number of lags.
+    optionally prepending a constant column.  The lag ordering matches the
+    MATLAB original: lag 1 (most recent) first, then lag 2, up to the
+    specified number of lags.
 
     Parameters
     ----------
@@ -37,38 +37,36 @@ def newlagmatrix(y, lags, include_constant=1):
     include_constant : int, optional
         Controls regressor composition:
 
-        - 0 : no constant column
-        - 1 : (default) prepend a column of ones before lag columns
-        - 2 : prepend a column of ones, then contemporaneous *y*, then lag
-          columns
+        - 0 : (default) no constant column
+        - 1 : prepend a column of ones before lag columns
 
     Returns
     -------
+    y_trimmed : numpy.ndarray
+        ``(T - lags) x K`` trimmed dependent variable matrix
+        (contemporaneous values).
     x : numpy.ndarray
         ``(T - lags) x M`` regressor matrix, where *M* depends on
         *include_constant* and *K*:
 
         - ``include_constant=0``: ``M = lags * K``
         - ``include_constant=1``: ``M = 1 + lags * K``
-        - ``include_constant=2``: ``M = 1 + K + lags * K``
 
         When ``lags=0`` and ``include_constant=0``, returns a ``(T, 0)``
         empty array.
-    y_trimmed : numpy.ndarray
-        ``(T - lags) x K`` trimmed dependent variable matrix.
 
     Raises
     ------
     ValueError
         If *y* is not a 1-D or 2-D array, *lags* is not a non-negative
-        integer, *include_constant* is not in ``{0, 1, 2}``, or the number
+        integer, *include_constant* is not in ``{0, 1}``, or the number
         of observations is not greater than the number of lags.
 
     Examples
     --------
     >>> import numpy as np
     >>> y = np.array([1.0, 2.0, 3.0, 4.0, 5.0])
-    >>> x, y_trimmed = newlagmatrix(y, 2, include_constant=1)
+    >>> y_trimmed, x = newlagmatrix(y, 2, include_constant=1)
     >>> y_trimmed
     array([[3.],
            [4.],
@@ -83,16 +81,11 @@ def newlagmatrix(y, lags, include_constant=1):
     Migrated from ``utility/newlagmatrix.m`` (Kevin Sheppard, Revision 5,
     Date: 12/1/2005).
 
-    Key differences from MATLAB original:
+    Return order matches MATLAB: ``[y, x] = newlagmatrix(...)`` maps to
+    ``(y_trimmed, x) = newlagmatrix(...)``.
 
-    - Default *include_constant* changed from 0 to 1
-      (Ref: newlagmatrix.m:31)
-    - *include_constant=2* option added (constant + contemporaneous + lags)
-    - ``T x K`` matrix input supported
-      (Ref: newlagmatrix.m:39-40 enforced vector-only input)
-    - Return order is ``(x, y_trimmed)`` vs MATLAB ``[y, x]``
-    - MATLAB ``repmat``/``reshape`` trick replaced with explicit array
-      slicing for clarity
+    MATLAB ``repmat``/``reshape`` trick replaced with explicit array
+    slicing for clarity while producing identical numerical results.
     """
     # ------------------------------------------------------------------
     # Input validation
@@ -119,9 +112,8 @@ def newlagmatrix(y, lags, include_constant=1):
     lags = lags_int
 
     # Ref: newlagmatrix.m:47-49 — c must be 0 or 1
-    # Extended to support include_constant=2 per Python specification
-    if include_constant not in (0, 1, 2):
-        raise ValueError('include_constant must be 0, 1, or 2.')
+    if include_constant not in (0, 1):
+        raise ValueError('include_constant must be 0 or 1.')
 
     # Ensure sufficient observations for the requested number of lags
     if lags > 0 and T <= lags:
@@ -161,24 +153,18 @@ def newlagmatrix(y, lags, include_constant=1):
             # Ref: newlagmatrix.m:68 — x = [ones(size(x,1),1) x]
             # Prepend column of ones before lag columns
             x = np.column_stack([np.ones((T_eff, 1)), x])
-        elif include_constant == 2:
-            # Python spec extension: [constant, contemporaneous, lags]
-            # Not in MATLAB original — adds contemporaneous y between
-            # the constant column and the lag columns
-            x = np.column_stack([np.ones((T_eff, 1)), y_trimmed, x])
     else:
         # Ref: newlagmatrix.m:70-78 — nlags == 0 branch
         y_trimmed = y.copy()
 
         if include_constant == 1:
-            # Ref: newlagmatrix.m:72-73 — x = ones(T, 1)
+            # Ref: newlagmatrix.m:71-73 — y=x; x=ones(T,1)
             x = np.ones((T, 1))
-        elif include_constant == 2:
-            # Python spec extension: constant + contemporaneous (no lags)
-            x = np.column_stack([np.ones((T, 1)), y_trimmed])
         else:
-            # Ref: newlagmatrix.m:75-76 — x = [] (empty matrix)
+            # Ref: newlagmatrix.m:74-76 — y=x; x=[]
             # Python equivalent: (T, 0) shaped array preserving row count
             x = np.zeros((T, 0))
 
-    return x, y_trimmed
+    # Ref: newlagmatrix.m:1 — function [y,x]=newlagmatrix(...)
+    # Return order matches MATLAB: y_trimmed first, then lag matrix x
+    return y_trimmed, x
