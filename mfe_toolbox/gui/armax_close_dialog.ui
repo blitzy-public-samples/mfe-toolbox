@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Qt Designer UI file for the ARMAX Close Confirmation Dialog.
+  Faithfully reproduces the layout of MATLAB GUIDE ARMAX_close_dialog.fig.
+
+  Ref: GUI/ARMAX_close_dialog.m — GUIDE callback structure analysis:
+    - figure1 → QDialog ARMAXCloseDialog (~400×150 px, modal)
+    - axes1   → QLabel (icon placeholder for question icon, replacing MATLAB dialogicons.mat)
+    - text1   → QLabel (close confirmation message text)
+    - pushbutton1 → QPushButton "Yes"
+    - pushbutton2 → QPushButton "No"
+
+  Widget objectNames are consistent with the Python signal/slot code
+  in armax_close_dialog.py which loads this file via PyQt6.uic.loadUi().
+-->
+<ui version="4.0">
+ <class>ARMAXCloseDialog</class>
+ <widget class="QDialog" name="ARMAXCloseDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>400</width>
+    <height>150</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Confirm Close</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <property name="sizeGripEnabled">
+   <bool>false</bool>
+  </property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <property name="leftMargin">
+    <number>16</number>
+   </property>
+   <property name="topMargin">
+    <number>16</number>
+   </property>
+   <property name="rightMargin">
+    <number>16</number>
+   </property>
+   <property name="bottomMargin">
+    <number>16</number>
+   </property>
+   <property name="spacing">
+    <number>12</number>
+   </property>
+   <item>
+    <layout class="QHBoxLayout" name="contentLayout">
+     <property name="spacing">
+      <number>16</number>
+     </property>
+     <item>
+      <!--
+        axes1: QLabel replacing MATLAB axes1 that displayed the question icon
+        from dialogicons.mat (questIconData). In PyQt6, the companion Python
+        class loads a QStyle.StandardPixmap.SP_MessageBoxQuestion icon into
+        this QLabel at runtime.
+        Ref: ARMAX_close_dialog.m:106-120 — load dialogicons.mat, display in axes1
+      -->
+      <widget class="QLabel" name="axes1">
+       <property name="minimumSize">
+        <size>
+         <width>48</width>
+         <height>48</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>48</width>
+         <height>48</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <!--
+        text1: QLabel displaying the close confirmation message.
+        Default text: "Do you want to close?"
+        Can be overridden at runtime via the 'string' parameter.
+        Ref: ARMAX_close_dialog.m:71 — set(handles.text1, 'String', varargin{index+1})
+      -->
+      <widget class="QLabel" name="text1">
+       <property name="text">
+        <string>Do you want to close?</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+       <property name="wordWrap">
+        <bool>true</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+         <horstretch>1</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>10</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="buttonLayout">
+     <property name="spacing">
+      <number>8</number>
+     </property>
+     <item>
+      <spacer name="buttonSpacerLeft">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <!--
+        pushbutton1: "Yes" button.
+        Ref: ARMAX_close_dialog.m:141-154 — pushbutton1_Callback assigns
+        button String ('Yes') to handles.output, calls uiresume.
+        In PyQt6 this maps to self.accept() in the companion Python class.
+      -->
+      <widget class="QPushButton" name="pushbutton1">
+       <property name="text">
+        <string>Yes</string>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>80</width>
+         <height>28</height>
+        </size>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <!--
+        pushbutton2: "No" button.
+        Ref: ARMAX_close_dialog.m:156-169 — pushbutton2_Callback assigns
+        button String ('No') to handles.output, calls uiresume.
+        In PyQt6 this maps to self.reject() in the companion Python class.
+      -->
+      <widget class="QPushButton" name="pushbutton2">
+       <property name="text">
+        <string>No</string>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>80</width>
+         <height>28</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
