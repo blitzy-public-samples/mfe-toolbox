@@ -1,0 +1,469 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Qt Designer UI file: ARMAXViewer
+  Faithfully reproduces the layout of the MATLAB GUIDE ARMAX_viewer.fig result display/plotting viewer.
+  Ref: GUI/ARMAX_viewer.m (800 lines) — widget objectNames match Python armax_viewer.py expectations.
+  Ref: GUI/ARMAX_viewer.fig — MATLAB GUIDE binary layout (geometry reconstructed from callback analysis).
+
+  Layout structure (top to bottom):
+    1. model_uipanel (QGroupBox) — Model equation display with embedded matplotlib canvas
+    2. model_stats_uipanel (QGroupBox) — Model statistics (LL, K, AIC, BIC, sigma^2)
+    3. estimates_uipanel (QGroupBox) — Paginated parameter estimates table
+    4. Controls bar — Model selector combo, page navigation, Close button
+
+  Fixed window size: 1000x706 pixels per ARMAX_viewer.m line 74:
+    set(gcf,'Position',[10 10 1000 706])
+-->
+<ui version="4.0">
+ <class>ARMAXViewer</class>
+ <widget class="QWidget" name="ARMAXViewer">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1000</width>
+    <height>706</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>1000</width>
+    <height>706</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>1000</width>
+    <height>706</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>ARMAX Viewer</string>
+  </property>
+  <!--
+    Main vertical layout: stacks the three display panels and controls bar.
+    Margins mirror MATLAB uipanel positioning at x=25, width=950 (25px side margins).
+    Ref: ARMAX_viewer.m line 282 — model_stats_uipanel Position [25 ... 950 84]
+  -->
+  <layout class="QVBoxLayout" name="mainLayout">
+   <property name="spacing">
+    <number>6</number>
+   </property>
+   <property name="leftMargin">
+    <number>10</number>
+   </property>
+   <property name="topMargin">
+    <number>10</number>
+   </property>
+   <property name="rightMargin">
+    <number>10</number>
+   </property>
+   <property name="bottomMargin">
+    <number>10</number>
+   </property>
+   <item>
+    <!--
+      Model Equation Area: QGroupBox containing a QWidget placeholder for FigureCanvasQTAgg.
+      Replaces MATLAB model_uipanel + model_axes.
+      Ref: ARMAX_viewer.m lines 174-268 — model_layout renders LaTeX equation in model_axes.
+      Default height derived from MATLAB: uiHeight = no_lines*33+24 (line 233).
+      For a typical 2-line equation: 2*33+24 = 90px.
+    -->
+    <widget class="QGroupBox" name="model_uipanel">
+     <property name="title">
+      <string>Model Equation</string>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>90</height>
+      </size>
+     </property>
+     <layout class="QVBoxLayout" name="modelEquationLayout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>4</number>
+      </property>
+      <property name="topMargin">
+       <number>4</number>
+      </property>
+      <property name="rightMargin">
+       <number>4</number>
+      </property>
+      <property name="bottomMargin">
+       <number>4</number>
+      </property>
+      <item>
+       <!--
+         Placeholder QWidget for matplotlib FigureCanvasQTAgg.
+         Replaces MATLAB model_axes within model_uipanel.
+         Python code will create a Figure+Canvas and embed it into this container.
+         Ref: ARMAX_viewer.m line 176 — axes(handles.model_axes)
+       -->
+       <widget class="QWidget" name="model_display" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>60</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <!--
+      Model Statistics Area: QGroupBox containing a QWidget placeholder for FigureCanvasQTAgg.
+      Replaces MATLAB model_stats_uipanel + stats_axes.
+      Ref: ARMAX_viewer.m lines 275-351 — model_stats_layout displays LL, K, AIC, BIC, sigma^2.
+      Fixed height of 84px per MATLAB:
+        set(handles.model_stats_uipanel,'Position',[25 model_uipanel_position(2)-84 950 84])
+        (line 282)
+      stats_axes position [15 9 920 60] (line 280).
+    -->
+    <widget class="QGroupBox" name="model_stats_uipanel">
+     <property name="title">
+      <string>Model Statistics</string>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>100</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>100</height>
+      </size>
+     </property>
+     <layout class="QVBoxLayout" name="modelStatsLayout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>4</number>
+      </property>
+      <property name="topMargin">
+       <number>4</number>
+      </property>
+      <property name="rightMargin">
+       <number>4</number>
+      </property>
+      <property name="bottomMargin">
+       <number>4</number>
+      </property>
+      <item>
+       <!--
+         Placeholder QWidget for matplotlib FigureCanvasQTAgg.
+         Replaces MATLAB stats_axes within model_stats_uipanel.
+         Displays: Log-likelihood, No. of Params, AIC, BIC, sigma^2.
+         Ref: ARMAX_viewer.m line 279 — axes(handles.stats_axes)
+         Ref: ARMAX_viewer.m line 284 — titles with Tahoma font
+       -->
+       <widget class="QWidget" name="stats_display" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>60</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <!--
+      Parameter Estimates Area: QGroupBox containing a QWidget placeholder for FigureCanvasQTAgg.
+      Replaces MATLAB estimates_uipanel + estimates_axes.
+      This panel expands to fill remaining vertical space.
+      Ref: ARMAX_viewer.m lines 483-508 — resize_parameter_estimate_uipanel dynamically sizes this.
+      Ref: ARMAX_viewer.m lines 513-560 — title_layout draws column headers:
+        Parameter, Estimate, Std. Error, T-stat, P-val
+      Ref: ARMAX_viewer.m lines 714-751 — draw_parameter_table renders paginated data.
+      Note from line 498: "estimates window is at least 330 pixels high"
+    -->
+    <widget class="QGroupBox" name="estimates_uipanel">
+     <property name="title">
+      <string>Parameter Estimates</string>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>1</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="minimumSize">
+      <size>
+       <width>0</width>
+       <height>330</height>
+      </size>
+     </property>
+     <layout class="QVBoxLayout" name="estimatesContentLayout">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>4</number>
+      </property>
+      <property name="topMargin">
+       <number>4</number>
+      </property>
+      <property name="rightMargin">
+       <number>4</number>
+      </property>
+      <property name="bottomMargin">
+       <number>4</number>
+      </property>
+      <item>
+       <!--
+         Placeholder QWidget for matplotlib FigureCanvasQTAgg.
+         Replaces MATLAB estimates_axes within estimates_uipanel.
+         Renders paginated parameter table with LaTeX parameter names and formatted values.
+         Ref: ARMAX_viewer.m line 715 — axes(handles.estimates_axes)
+       -->
+       <widget class="QWidget" name="estimates_display" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>1</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>280</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <!--
+      Controls Bar: Model selector combo box, page navigation, and Close button.
+      Horizontal layout at the bottom of the viewer window.
+      Ref: ARMAX_viewer.m lines 354-376 — model_popupmenu_Callback (model selector)
+      Ref: ARMAX_viewer.m lines 380-411 — page_number_edit_Callback (page input)
+      Ref: ARMAX_viewer.m lines 437-471 — increase/decrease_page pushbuttons (page nav)
+      Ref: ARMAX_viewer.m lines 473-478 — pushbutton3_Callback (Close)
+      Ref: ARMAX_viewer.m lines 694-707 — pagination UI state updates
+    -->
+    <layout class="QHBoxLayout" name="controlsLayout">
+     <property name="spacing">
+      <number>8</number>
+     </property>
+     <item>
+      <!--
+        Model selection combo box.
+        Populated with StringID from each result in Python constructor.
+        Ref: ARMAX_viewer.m lines 68-73:
+          popup_cell=[]; for i=1:length(handles.Results);
+            popup_cell{i}=handles.Results{i}.StringID; end
+          set(handles.model_popupmenu,'String',popup_cell)
+      -->
+      <widget class="QComboBox" name="model_popupmenu">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>1</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>250</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Select a model to display</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="leftControlsSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <!--
+        Page backward button.
+        Ref: ARMAX_viewer.m lines 456-471 — decrease_page_pushbutton_Callback
+        Decrements page if CurrentPage > 1.
+      -->
+      <widget class="QPushButton" name="decrease_page_pushbutton">
+       <property name="text">
+        <string>&lt;</string>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>30</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>30</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Previous page</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <!--
+        Page number input field.
+        Ref: ARMAX_viewer.m lines 380-411 — page_number_edit_Callback
+        Validates bounded integer input via bounded_integer_validate (lines 782-800).
+        Default text "1".
+      -->
+      <widget class="QLineEdit" name="page_number_edit">
+       <property name="text">
+        <string>1</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>40</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>50</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Enter page number</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <!--
+        Total pages label.
+        Ref: ARMAX_viewer.m line 701 — set(handles.number_of_pages_text,'String',num2str(NumberOfPages))
+        Note: MATLAB code uses both number_of_pages_text (line 701) and num_pages_text (lines 415-434).
+        The objectName number_of_pages_text is used here per the AAP specification.
+      -->
+      <widget class="QLabel" name="number_of_pages_text">
+       <property name="text">
+        <string>/ 1</string>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>30</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <!--
+        Page forward button.
+        Ref: ARMAX_viewer.m lines 437-454 — increase_page_pushbutton_Callback
+        Increments page if CurrentPage < NumberOfPages.
+      -->
+      <widget class="QPushButton" name="increase_page_pushbutton">
+       <property name="text">
+        <string>&gt;</string>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>30</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>30</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Next page</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="rightControlsSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <!--
+        Close button.
+        Ref: ARMAX_viewer.m lines 473-478 — pushbutton3_Callback: delete(handles.figure1)
+        Python: self.close()
+      -->
+      <widget class="QPushButton" name="pushbutton3">
+       <property name="text">
+        <string>Close</string>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>80</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Close the viewer window</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
