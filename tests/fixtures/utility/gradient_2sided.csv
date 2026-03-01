@@ -1,0 +1,86 @@
+# gradient_2sided() MATLAB/Octave reference fixture
+# Generated for MFE Toolbox MATLAB-to-Python migration
+# Two-sided finite difference gradient computation reference data
+# Algorithm: h = eps^(1/3)*max(|x|,1e-2); G = (f(x+h*ei)-f(x-h*ei))/(2*h)
+# Source: utility/gradient_2sided.m (77 lines, Revision 3, 2/1/2006)
+# Originally from COMPECON toolbox, modified by Kevin Sheppard
+# Numerical parity target: numpy.testing.assert_allclose(atol=1e-6, rtol=1e-4)
+#
+# Format: Each test case block starts with a 'test_case' row containing:
+#   test_case, case_number, description, function_type, dimension_M
+# Followed by 'input_x' row with the parameter vector,
+# 'step_h' row with the computed step sizes,
+# 'gradient' row with the computed gradient vector G.
+# For test case 7 (with scores), additional rows:
+#   'input_data' row with the data vector used,
+#   'score_row_N' rows with the N-th row of the T x M score matrix Gt.
+#
+# Test Case 1: Quadratic f(x) = sum(x.^2)
+#   Analytical gradient = 2*x
+#   x = [1, 2, 3], M = 3
+test_case,1,quadratic_sum_of_squares,scalar,3
+input_x,1.0000000000000000e+00,2.0000000000000000e+00,3.0000000000000000e+00
+step_h,6.0554544523139242e-06,1.2110908904627848e-05,1.8166363357163817e-05
+forward_f,1.4000012110945573e+01,1.4000048443782292e+01,1.4000108998510159e+01
+backward_f,1.3999987889127764e+01,1.3999951556511055e+01,1.3999891002149873e+01
+gradient,1.9999999999266629e+00,4.0000000000000000e+00,6.0000000000000000e+00
+#
+# Test Case 2: Weighted quadratic f(x) = 0.5*x'*A*x
+#   A = [2 0.5; 0.5 4], analytical gradient = A*x = [2.75, -1.25]
+#   x = [1.5, -0.5], M = 2
+test_case,2,weighted_quadratic,scalar,2
+input_x,1.5000000000000000e+00,-5.0000000000000000e-01
+step_h,9.0831816785819086e-06,3.0277272262124733e-06
+gradient,2.7499999999694431e+00,-1.2499999999495808e+00
+#
+# Test Case 3: Exponential sum f(x) = sum(exp(x))
+#   Analytical gradient = exp(x)
+#   x = [0, 0.5, 1, -1], M = 4
+test_case,3,exponential_sum,scalar,4
+input_x,0.0000000000000000e+00,5.0000000000000000e-01,1.0000000000000000e+00,-1.0000000000000000e+00
+step_h,6.0554544523933436e-08,3.0277272261569621e-06,6.0554544523139242e-06,6.0554544524249465e-06
+gradient,9.9999999943685669e-01,1.6487212706943675e+00,2.7182818284451509e+00,3.6787944117843896e-01
+#
+# Test Case 4: Polynomial mix f(x) = x1^3 + 2*x2^2 + sin(x3)
+#   Analytical gradient = [3*x1^2, 4*x2, cos(x3)]
+#   x = [2, -1, pi/4], M = 3
+test_case,4,polynomial_mix,scalar,3
+input_x,2.0000000000000000e+00,-1.0000000000000000e+00,7.8539816339744828e-01
+gradient,1.2000000000014667e+01,-4.0000000000073337e+00,7.0710678119585335e-01
+#
+# Test Case 5: Near-zero parameters (tests max(|x|,1e-2) floor in step size)
+#   f(x) = sum(x.^2), analytical gradient = 2*x
+#   x = [1e-8, 0, -1e-10, 5], M = 4
+#   Note: For very small x, the step h dominates and gradient of tiny values rounds to 0
+test_case,5,near_zero_parameters,scalar,4
+input_x,1.0000000000000000e-08,0.0000000000000000e+00,-1.0000000000000000e-10,5.0000000000000000e+00
+step_h,6.0554544523933436e-08,6.0554544523933436e-08,6.0554544523933436e-08,3.0277272261791666e-05
+gradient,0.0000000000000000e+00,0.0000000000000000e+00,0.0000000000000000e+00,1.0000000000000000e+01
+#
+# Test Case 6: Single parameter f(x) = x^2
+#   Analytical gradient = 2*x = 6
+#   x = [3], M = 1
+test_case,6,single_parameter,scalar,1
+input_x,3.0000000000000000e+00
+gradient,6.0000000000000000e+00
+#
+# Test Case 7: Gaussian negative log-likelihood WITH individual scores
+#   f(params, data) returns (total_nll, individual_nlls)
+#   individual_nll_t = 0.5*log(2*pi) + log_sigma + 0.5*((data_t - mu)/sigma)^2
+#   params = [mu=0.1, log_sigma=0.2], T = 10 observations, M = 2
+#   data generated with numpy.random.seed(42); data = randn(10)
+#   Returns gradient G (M=2) and score matrix Gt (T=10 x M=2)
+test_case,7,gaussian_nll_with_scores,score,2
+input_x,1.0000000000000000e-01,2.0000000000000000e-01
+input_data,4.9671415301123267e-01,-1.3826430117118466e-01,6.4768853810069249e-01,1.5230298564080254e+00,-2.3415337472333597e-01,-2.3413695694918055e-01,1.5792128155073915e+00,7.6743472915290878e-01,-4.6947438593495211e-01,5.4256004358596466e-01
+gradient,-2.3331234036922561e+00,6.0342962290596347e+00
+score_row_0,-2.6592544930406192e-01,8.9450361053819560e-01
+score_row_1,1.5971333730548148e-01,9.6194601324317619e-01
+score_row_2,-3.6712660610588965e-01,7.9892896581492578e-01
+score_row_3,-9.5388543873423481e-01,-3.5740745913613364e-01
+score_row_4,2.2398970545359589e-01,9.2515308397669793e-01
+score_row_5,2.2397870031144243e-01,9.2516043867515552e-01
+score_row_6,-9.9154600268254833e-01,-4.6670755425327704e-01
+score_row_7,-4.4739487844241416e-01,7.0139312051396241e-01
+score_row_8,3.8173009660996621e-01,7.8261448766349140e-01
+score_row_9,-2.9665686883696407e-01,8.6871152312349620e-01
