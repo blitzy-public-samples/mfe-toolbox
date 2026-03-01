@@ -1,0 +1,48 @@
+test_case,p_in,o_in,q_in,error_type_in,user_delta_in,p_out,o_out,q_out,error_type_out,user_delta_out,no_user_delta_out,is_valid,expected_error
+default_normal_111,1,1,1,NORMAL,,1,1,1,1,,1,1,
+default_studentst_111,1,1,1,STUDENTST,,1,1,1,2,,1,1,
+default_ged_111,1,1,1,GED,,1,1,1,3,,1,1,
+default_skewt_111,1,1,1,SKEWT,,1,1,1,4,,1,1,
+higher_order_p,2,1,1,NORMAL,,2,1,1,1,,1,1,
+higher_order_q,1,1,2,NORMAL,,1,1,2,1,,1,1,
+higher_order_o,2,2,1,NORMAL,,2,2,1,1,,1,1,
+high_order_all,3,2,2,NORMAL,,3,2,2,1,,1,1,
+zero_o,1,0,1,NORMAL,,1,0,1,1,,1,1,
+zero_q,1,1,0,NORMAL,,1,1,0,1,,1,1,
+zero_o_and_q,1,0,0,NORMAL,,1,0,0,1,,1,1,
+with_user_delta,1,1,1,NORMAL,2.0,1,1,1,1,2.0,0,1,
+user_delta_min,1,1,1,NORMAL,0.3,1,1,1,1,0.3,0,1,
+user_delta_max,1,1,1,NORMAL,4.0,1,1,1,1,4.0,0,1,
+user_delta_mid,1,1,1,NORMAL,1.5,1,1,1,1,1.5,0,1,
+studentst_with_delta,1,1,1,STUDENTST,2.0,1,1,1,2,2.0,0,1,
+ged_with_delta,1,1,1,GED,1.0,1,1,1,3,1.0,0,1,
+skewt_with_delta,1,1,1,SKEWT,3.0,1,1,1,4,3.0,0,1,
+large_p,5,1,1,NORMAL,,5,1,1,1,,1,1,
+large_q,1,1,5,NORMAL,,1,1,5,1,,1,1,
+large_o,5,5,1,NORMAL,,5,5,1,1,,1,1,
+p_equals_o,3,3,1,NORMAL,,3,3,1,1,,1,1,
+studentst_110,1,1,0,STUDENTST,,1,1,0,2,,1,1,
+ged_101,1,0,1,GED,,1,0,1,3,,1,1,
+large_poq,4,3,3,NORMAL,,4,3,3,1,,1,1,
+p2_o1_q1_skewt,2,1,1,SKEWT,,2,1,1,4,,1,1,
+p3_o1_q2_ged,3,1,2,GED,,3,1,2,3,,1,1,
+p1_o0_q0_studentst,1,0,0,STUDENTST,,1,0,0,2,,1,1,
+user_delta_near_min,1,1,1,NORMAL,0.31,1,1,1,1,0.31,0,1,
+user_delta_near_max,1,1,1,NORMAL,3.99,1,1,1,1,3.99,0,1,
+invalid_p_zero,0,1,1,NORMAL,,,,,,,,0,p must be positive scalar.
+invalid_p_negative,-1,1,1,NORMAL,,,,,,,,0,p must be positive scalar.
+invalid_q_negative,1,1,-1,NORMAL,,,,,,,,0,q must be a non-negative scalar.
+invalid_o_negative,1,-1,1,NORMAL,,,,,,,,0,o must be a non-negative scalar.
+invalid_o_greater_than_p,1,2,1,NORMAL,,,,,,,,0,O must be less than or equal to P
+invalid_o_greater_than_p_2,2,3,1,NORMAL,,,,,,,,0,O must be less than or equal to P
+invalid_error_type,1,1,1,INVALID,,,,,,,,0,"errorType must be a string and one of: 'NORMAL', 'STUDENTST', 'GED' or 'SKEWT'."
+invalid_error_type_numeric,1,1,1,99,,,,,,,,0,"errorType must be a string and one of: 'NORMAL', 'STUDENTST', 'GED' or 'SKEWT'."
+invalid_error_type_lowercase,1,1,1,normal,,,,,,,,0,"errorType must be a string and one of: 'NORMAL', 'STUDENTST', 'GED' or 'SKEWT'."
+invalid_user_delta_too_high,1,1,1,NORMAL,5.0,,,,,,,0,USERDELTA must be a scalar between 0.3 and 4
+invalid_user_delta_too_low,1,1,1,NORMAL,0.1,,,,,,,0,USERDELTA must be a scalar between 0.3 and 4
+invalid_user_delta_zero,1,1,1,NORMAL,0.0,,,,,,,0,USERDELTA must be a scalar between 0.3 and 4
+invalid_user_delta_negative,1,1,1,NORMAL,-1.0,,,,,,,0,USERDELTA must be a scalar between 0.3 and 4
+invalid_data_empty,1,1,1,NORMAL,,,,,,,,0,data is empty.
+invalid_data_row_vector,1,1,1,NORMAL,,,,,,,,0,data series must be a column vector.
+invalid_data_matrix,1,1,1,NORMAL,,,,,,,,0,data series must be a column vector.
+invalid_data_scalar,1,1,1,NORMAL,,,,,,,,0,data series must be a column vector.
