@@ -1,0 +1,42 @@
+test_case,p_in,o_in,q_in,error_type_in,p_out,o_out,q_out,error_type_out,is_valid,expected_error
+default_normal_111,1,1,1,NORMAL,1,1,1,1,1,
+default_studentst_111,1,1,1,STUDENTST,1,1,1,2,1,
+default_ged_111,1,1,1,GED,1,1,1,3,1,
+default_skewt_111,1,1,1,SKEWT,1,1,1,4,1,
+higher_order_p,2,1,1,NORMAL,2,1,1,1,1,
+higher_order_q,1,1,2,NORMAL,1,1,2,1,1,
+higher_order_o,1,2,1,NORMAL,1,2,1,1,1,
+high_order_all,3,2,2,NORMAL,3,2,2,1,1,
+zero_o,1,0,1,NORMAL,1,0,1,1,1,
+zero_q,1,1,0,NORMAL,1,1,0,1,1,
+zero_o_and_q,1,0,0,NORMAL,1,0,0,1,1,
+zero_p_nonzero_o,0,1,1,NORMAL,0,1,1,1,1,
+zero_p_and_q_nonzero_o,0,1,0,NORMAL,0,1,0,1,1,
+zero_p_nonzero_o_zero_q,0,2,0,NORMAL,0,2,0,1,1,
+studentst_110,1,1,0,STUDENTST,1,1,0,2,1,
+ged_101,1,0,1,GED,1,0,1,3,1,
+skewt_011,0,1,1,SKEWT,0,1,1,4,1,
+studentst_higher_p,2,1,1,STUDENTST,2,1,1,2,1,
+ged_higher_o,1,3,1,GED,1,3,1,3,1,
+skewt_higher_q,1,1,3,SKEWT,1,1,3,4,1,
+large_p,5,1,1,NORMAL,5,1,1,1,1,
+large_q,1,1,5,NORMAL,1,1,5,1,1,
+large_o,1,5,1,NORMAL,1,5,1,1,1,
+large_poq,4,3,4,NORMAL,4,3,4,1,1,
+p1_o0_q0_studentst,1,0,0,STUDENTST,1,0,0,2,1,
+p0_o1_q0_ged,0,1,0,GED,0,1,0,3,1,
+p0_o1_q1_skewt,0,1,1,SKEWT,0,1,1,4,1,
+p2_o2_q1_normal,2,2,1,NORMAL,2,2,1,1,1,
+p1_o3_q2_studentst,1,3,2,STUDENTST,1,3,2,2,1,
+invalid_p_negative,-1,1,1,NORMAL,,,,,0,p must be positive scalar.
+invalid_p_and_o_zero,0,0,1,NORMAL,,,,,0,One of p or o must be non-zero
+invalid_p_and_o_zero_q_zero,0,0,0,NORMAL,,,,,0,One of p or o must be non-zero
+invalid_q_negative,1,1,-1,NORMAL,,,,,0,q must be a non-negative scalar.
+invalid_o_negative,1,-1,1,NORMAL,,,,,0,o must be a non-negative scalar.
+invalid_error_type,1,1,1,INVALID,,,,,0,error_type must be a string and one of: 'NORMAL' 'STUDENTST' 'GED' or 'SKEWT'.
+invalid_error_type_numeric,1,1,1,99,,,,,0,error_type must be a string and one of: 'NORMAL' 'STUDENTST' 'GED' or 'SKEWT'.
+invalid_error_type_lowercase,1,1,1,normal,,,,,0,error_type must be a string and one of: 'NORMAL' 'STUDENTST' 'GED' or 'SKEWT'.
+invalid_data_empty,1,1,1,NORMAL,,,,,0,data is empty.
+invalid_data_row_vector,1,1,1,NORMAL,,,,,0,data series must be a column vector.
+invalid_data_matrix,1,1,1,NORMAL,,,,,0,data series must be a column vector.
+invalid_data_scalar,1,1,1,NORMAL,,,,,0,data series must be a column vector.
