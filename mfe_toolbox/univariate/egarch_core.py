@@ -26,6 +26,8 @@ Revision: 3    Date: 9/1/2005
 Python migration by Blitzy
 """
 
+import math
+
 import numpy as np
 from numba import jit
 
@@ -103,7 +105,7 @@ def egarch_core(data, parameters, back_cast, upper, p, o, q, m, T):
     absStdData = np.zeros(T)
 
     # Ref: egarch_core.c:22 — Exponentiate back_cast for actual variance
-    exp_back_cast = np.exp(back_cast)
+    exp_back_cast = math.exp(back_cast)
 
     # Ref: egarch_core.c:23, egarch_core.m:50 — Expected value of |Z| for
     # standard normal Z: sqrt(2/pi) = 0.797884560802865. Hardcoded constant
@@ -114,7 +116,7 @@ def egarch_core(data, parameters, back_cast, upper, p, o, q, m, T):
     # eLB is the lower bound for actual variance (exp(back_cast) / 10000).
     # hLB is the lower bound for log-variance (back_cast - log(10000)).
     eLB = exp_back_cast / 10000.0
-    hLB = back_cast - np.log(10000.0)
+    hLB = back_cast - math.log(10000.0)
 
     # Ref: egarch_core.c:24-32 — Initialization of back-cast values.
     # The first m periods use the back_cast value for log-variance, which
@@ -124,9 +126,9 @@ def egarch_core(data, parameters, back_cast, upper, p, o, q, m, T):
     for j in range(m):
         logHt[j] = back_cast
         ht[j] = exp_back_cast
-        vol = np.sqrt(ht[j])
+        vol = math.sqrt(ht[j])
         stdData[j] = data[j] / vol
-        absStdData[j] = np.abs(stdData[j]) - subconst
+        absStdData[j] = math.fabs(stdData[j]) - subconst
 
     # Ref: egarch_core.c:35-69 — Main recursion loop.
     # For each time period from m to T-1, compute the log-variance as a
@@ -161,7 +163,7 @@ def egarch_core(data, parameters, back_cast, upper, p, o, q, m, T):
         # Ref: egarch_core.c:47 — Exponentiate log-variance to get actual
         # conditional variance. This is the key EGARCH feature: modeling
         # log(h_t) ensures h_t > 0 without requiring parameter constraints.
-        ht[i] = np.exp(logHt[i])
+        ht[i] = math.exp(logHt[i])
 
         # Ref: egarch_core.c:48-52 — Lower bound enforcement.
         # Prevents variance from becoming too small (numerical underflow).
@@ -175,7 +177,7 @@ def egarch_core(data, parameters, back_cast, upper, p, o, q, m, T):
         # logic exactly, which differs from the MATLAB .m version.
         # C MEX is authoritative per migration specification.
         if ht[i] > upper:
-            if np.isinf(ht[i]):
+            if math.isinf(ht[i]):
                 # Ref: egarch_core.c:56-58 — Infinity: hard cap at upper
                 ht[i] = upper
             else:
@@ -187,14 +189,14 @@ def egarch_core(data, parameters, back_cast, upper, p, o, q, m, T):
             # Ref: egarch_core.c:64 — Reset log-variance to log(upper).
             # This prevents the log-variance feedback loop from diverging
             # in subsequent GARCH lag terms.
-            logHt[i] = np.log(upper)
+            logHt[i] = math.log(upper)
 
         # Ref: egarch_core.c:66-68 — Update standardized residuals.
         # These values feed into the next iteration's ARCH and asymmetric
         # terms via the lagged absStdData and stdData arrays.
-        vol = np.sqrt(ht[i])
+        vol = math.sqrt(ht[i])
         stdData[i] = data[i] / vol
-        absStdData[i] = np.abs(stdData[i]) - subconst
+        absStdData[i] = math.fabs(stdData[i]) - subconst
 
     # Ref: egarch_core.m:90 — Return actual conditional variance array.
     # MATLAB returns ht=eht (actual variance, not log-variance).

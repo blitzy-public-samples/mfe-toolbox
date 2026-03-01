@@ -16,11 +16,24 @@ import warnings
 
 
 # ---------------------------------------------------------------------------
-# Local helper functions for time conversion
-# These replicate functionality from wall2seconds.m, seconds2wall.m,
-# wall2unit.m, seconds2unit.m, unit2wall.m, unit2seconds.m.
-# Implemented locally to keep this module self-contained per schema
-# (depends_on_files is empty).
+# Local helper functions for time conversion (intentionally self-contained)
+#
+# These replicate core math from wall2seconds.m, seconds2wall.m, wall2unit.m,
+# seconds2unit.m, unit2wall.m, unit2seconds.m.  They are kept LOCAL rather
+# than imported from the sibling modules for two reasons:
+#
+# 1. The sibling modules enforce strict input validation (e.g., arrays must
+#    have >= 2 elements, valid HHMMSS format checks).  This module's internal
+#    callers may pass scalars, single-element arrays, or pre-validated data
+#    where those checks would be unnecessary overhead or would raise spurious
+#    errors.
+#
+# 2. Self-containment avoids circular or fragile import dependencies within
+#    the realized subpackage, keeping this performance-critical price filter
+#    independent of sibling module changes.
+#
+# If the sibling modules are updated, verify that these local helpers
+# produce numerically identical results.
 # ---------------------------------------------------------------------------
 
 

@@ -21,6 +21,8 @@ kevin.sheppard@economics.ox.ac.uk
 Revision: 1    Date: 7/12/2009
 """
 
+import math
+
 import numpy as np
 import numba
 
@@ -187,7 +189,7 @@ def agarch_core(
             # Compute NAGARCH shock: (data[i] - gamma * sqrt(ht[i]))^2
             # KEY NAGARCH DIFFERENCE from AGARCH: uses sqrt(ht[i])
             # Ref: agarch_core.c:56-57
-            shock[i] = data[i] - gamma * np.sqrt(ht[i])
+            shock[i] = data[i] - gamma * math.sqrt(ht[i])
             shock[i] = shock[i] * shock[i]
 
     return ht

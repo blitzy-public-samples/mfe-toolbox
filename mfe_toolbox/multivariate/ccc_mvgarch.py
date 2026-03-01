@@ -21,16 +21,66 @@ Statistics, 72, 498-505.
 import warnings
 
 import numpy as np
+import numba
 from scipy.optimize import minimize
 
 
 # ============================================================================
-# LOCAL HELPER: TARCH variance recursion
+# LOCAL HELPER: TARCH variance recursion (Numba JIT inner loop)
 # Ref: univariate/tarch_core_simple.m and mex_source/tarch_core.c
+#
+# NOTE: This is intentionally a LOCAL reimplementation rather than an import
+# of mfe_toolbox.univariate.tarch_core.tarch_core.  The module-level
+# tarch_core initialises ht[0:m] = back_cast and starts the recursion at
+# index m, whereas this CCC-specific version computes ht[0:m] via the full
+# recursion with back_cast substituted for negative-index lookups.  The two
+# approaches produce different warm-up values, which propagate through the
+# GARCH terms and would change log-likelihood values during CCC estimation.
+# Preserving the local variant maintains numerical parity with the MATLAB
+# ccc_mvgarch.m which also uses its own tarch_core calling convention.
 # ============================================================================
-def _tarch_core(fdata, fIdata, parameters, back_cast, p, o, q, m, T, tarch_type):
+@numba.jit(nopython=True, cache=True)
+def _tarch_core_jit(fdata, fIdata, parameters, back_cast, p, o, q, T, tarch_type):
+    """Numba JIT-compiled TARCH(p,o,q) conditional variance recursion.
+
+    Ref: tarch_core_simple.m — CCC-specific warm-up convention where
+    negative-index lookups use back_cast rather than pre-initializing ht[0:m].
     """
-    Compute TARCH(p,o,q) conditional variance recursion.
+    omega = parameters[0]
+    ht = np.zeros(T, dtype=np.float64)
+    for t in range(T):
+        ht[t] = omega
+        for j in range(p):
+            idx = t - j - 1
+            if idx >= 0:
+                ht[t] += parameters[1 + j] * fdata[idx]
+            else:
+                ht[t] += parameters[1 + j] * back_cast
+        for j in range(o):
+            idx = t - j - 1
+            if idx >= 0:
+                ht[t] += parameters[1 + p + j] * fIdata[idx]
+            else:
+                # Ref: tarch.m:115 — asymmetric back-cast = 0.5 * back_cast
+                ht[t] += parameters[1 + p + j] * 0.5 * back_cast
+        for j in range(q):
+            idx = t - j - 1
+            if idx >= 0:
+                ht[t] += parameters[1 + p + o + j] * ht[idx]
+            else:
+                ht[t] += parameters[1 + p + o + j] * back_cast
+    # Ref: tarch_core_simple.m:79-80 — square ht for absolute-value models
+    if tarch_type == 1:
+        for t in range(T):
+            ht[t] = ht[t] * ht[t]
+    return ht
+
+
+def _tarch_core(fdata, fIdata, parameters, back_cast, p, o, q, m, T, tarch_type):
+    """Compute TARCH(p,o,q) conditional variance recursion.
+
+    Thin wrapper that converts inputs to the correct dtypes and delegates to
+    the Numba JIT-compiled inner loop ``_tarch_core_jit`` for performance.
 
     Parameters match the MEX interface: fdata and fIdata are already augmented
     with m back-cast entries prepended. The recursion produces T values;
@@ -41,43 +91,19 @@ def _tarch_core(fdata, fIdata, parameters, back_cast, p, o, q, m, T, tarch_type)
     parameters = np.asarray(parameters, dtype=np.float64).ravel()
     fdata = np.asarray(fdata, dtype=np.float64).ravel()
     fIdata = np.asarray(fIdata, dtype=np.float64).ravel()
-
-    omega = parameters[0]
-    alpha = parameters[1:1 + p]
-    gamma = parameters[1 + p:1 + p + o]
-    beta = parameters[1 + p + o:1 + p + o + q]
-
-    ht = np.zeros(T, dtype=np.float64)
-    for t in range(T):
-        ht[t] = omega
-        for j in range(p):
-            idx = t - j - 1
-            if idx >= 0:
-                ht[t] += alpha[j] * fdata[idx]
-            else:
-                ht[t] += alpha[j] * back_cast
-        for j in range(o):
-            idx = t - j - 1
-            if idx >= 0:
-                ht[t] += gamma[j] * fIdata[idx]
-            else:
-                # Ref: tarch.m:115 — asymmetric back-cast = 0.5 * back_cast
-                ht[t] += gamma[j] * 0.5 * back_cast
-        for j in range(q):
-            idx = t - j - 1
-            if idx >= 0:
-                ht[t] += beta[j] * ht[idx]
-            else:
-                ht[t] += beta[j] * back_cast
-    # Ref: tarch_core_simple.m:79-80 — square ht for absolute-value models
-    if tarch_type == 1:
-        ht = ht ** 2
-    return ht
+    return _tarch_core_jit(fdata, fIdata, parameters, float(back_cast),
+                           p, o, q, T, tarch_type)
 
 
 # ============================================================================
 # LOCAL HELPER: Normal log-likelihood
 # Ref: distributions/normloglik.m
+#
+# NOTE: Kept local because mfe_toolbox.distributions.normloglik requires
+# strict (T, 1) column-vector inputs with shape validation, while this
+# CCC-internal version operates on flat 1-D arrays produced by the TARCH
+# recursion.  Importing the module version would require reshaping at every
+# call site and add unnecessary overhead.
 # ============================================================================
 def _normloglik(data, mu, sigma2):
     """
