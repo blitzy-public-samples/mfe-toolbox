@@ -1,0 +1,752 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Qt Designer UI file: ARMAXMainWindow
+  Faithfully reproduces the layout of the MATLAB GUIDE ARMAX.fig main estimation window.
+  Ref: GUI/ARMAX.m (1282 lines) — widget objectNames match Python armax_main.py expectations.
+  Ref: GUI/ARMAX.fig — MATLAB GUIDE binary layout (geometry reconstructed from callback analysis).
+-->
+<ui version="4.0">
+ <class>ARMAXMainWindow</class>
+ <widget class="QMainWindow" name="ARMAXMainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>900</width>
+    <height>700</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>ARMAX Estimation</string>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>900</width>
+    <height>700</height>
+   </size>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="mainVerticalLayout">
+    <property name="spacing">
+     <number>6</number>
+    </property>
+    <property name="leftMargin">
+     <number>6</number>
+    </property>
+    <property name="topMargin">
+     <number>6</number>
+    </property>
+    <property name="rightMargin">
+     <number>6</number>
+    </property>
+    <property name="bottomMargin">
+     <number>6</number>
+    </property>
+    <item>
+     <!-- Top area: left panel (controls) + right panel (plot) -->
+     <layout class="QHBoxLayout" name="topHorizontalLayout">
+      <property name="spacing">
+       <number>6</number>
+      </property>
+      <item>
+       <!-- LEFT PANEL: Input controls, actions, model selector, message -->
+       <layout class="QVBoxLayout" name="leftPanelLayout">
+        <property name="spacing">
+         <number>6</number>
+        </property>
+        <item>
+         <!-- Model Specification Group Box -->
+         <widget class="QGroupBox" name="modelSpecGroupBox">
+          <property name="title">
+           <string>Model Specification</string>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <layout class="QVBoxLayout" name="modelSpecLayout">
+           <property name="spacing">
+            <number>4</number>
+           </property>
+           <property name="leftMargin">
+            <number>8</number>
+           </property>
+           <property name="topMargin">
+            <number>8</number>
+           </property>
+           <property name="rightMargin">
+            <number>8</number>
+           </property>
+           <property name="bottomMargin">
+            <number>8</number>
+           </property>
+           <item>
+            <!-- AR Lags row -->
+            <layout class="QHBoxLayout" name="arLagsLayout">
+             <item>
+              <widget class="QLabel" name="arLagsLabel">
+               <property name="text">
+                <string>AR Lags:</string>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>80</width>
+                 <height>0</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="AR_lags_edit">
+               <property name="toolTip">
+                <string>Enter AR lag specification (e.g. &quot;1:4&quot; or &quot;1 3 5&quot;)</string>
+               </property>
+               <property name="placeholderText">
+                <string>e.g. 1:4</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <!-- MA Lags row -->
+            <layout class="QHBoxLayout" name="maLagsLayout">
+             <item>
+              <widget class="QLabel" name="maLagsLabel">
+               <property name="text">
+                <string>MA Lags:</string>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>80</width>
+                 <height>0</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="MA_lags_edit">
+               <property name="toolTip">
+                <string>Enter MA lag specification (e.g. &quot;1:4&quot; or &quot;1 3 5&quot;)</string>
+               </property>
+               <property name="placeholderText">
+                <string>e.g. 1:2</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <!-- Exogenous Variables row -->
+            <layout class="QHBoxLayout" name="exogLayout">
+             <item>
+              <widget class="QLabel" name="exogLabel">
+               <property name="text">
+                <string>Exogenous:</string>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>80</width>
+                 <height>0</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="EXOG_edit">
+               <property name="toolTip">
+                <string>Enter exogenous variable specification</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="EXOG_clear_pushbutton">
+               <property name="text">
+                <string>Clear</string>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>60</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="toolTip">
+                <string>Clear exogenous variable specification</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <!-- Constant radio buttons -->
+            <layout class="QHBoxLayout" name="constantLayout">
+             <item>
+              <widget class="QRadioButton" name="constant_include">
+               <property name="text">
+                <string>Include Constant</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+               <property name="toolTip">
+                <string>Include a constant term in the model (default)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="constant_exclude">
+               <property name="text">
+                <string>Exclude Constant</string>
+               </property>
+               <property name="toolTip">
+                <string>Exclude the constant term from the model</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <!-- ACF Lags row -->
+            <layout class="QHBoxLayout" name="acfLagsLayout">
+             <item>
+              <widget class="QLabel" name="acfLagsLabel">
+               <property name="text">
+                <string>ACF Lags:</string>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>80</width>
+                 <height>0</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="ACF_lags_edit">
+               <property name="toolTip">
+                <string>Number of autocorrelation lags to display</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <!-- Hold Back row -->
+            <layout class="QHBoxLayout" name="holdBackLayout">
+             <item>
+              <widget class="QLabel" name="holdBackLabel">
+               <property name="text">
+                <string>Hold Back:</string>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>80</width>
+                 <height>0</height>
+                </size>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="hold_back_edit">
+               <property name="text">
+                <string>0</string>
+               </property>
+               <property name="toolTip">
+                <string>Number of initial observations to hold back</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <!-- Actions Group Box -->
+         <widget class="QGroupBox" name="actionsGroupBox">
+          <property name="title">
+           <string>Actions</string>
+          </property>
+          <layout class="QHBoxLayout" name="actionsLayout">
+           <property name="spacing">
+            <number>6</number>
+           </property>
+           <property name="leftMargin">
+            <number>8</number>
+           </property>
+           <property name="topMargin">
+            <number>8</number>
+           </property>
+           <property name="rightMargin">
+            <number>8</number>
+           </property>
+           <property name="bottomMargin">
+            <number>8</number>
+           </property>
+           <item>
+            <widget class="QPushButton" name="estimate_pushbutton">
+             <property name="text">
+              <string>Estimate</string>
+             </property>
+             <property name="toolTip">
+              <string>Run ARMAX estimation with current specification</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="reset_pushbutton">
+             <property name="text">
+              <string>Reset</string>
+             </property>
+             <property name="toolTip">
+              <string>Clear all inputs and reset to original data</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="close_pushbutton">
+             <property name="text">
+              <string>Close</string>
+             </property>
+             <property name="toolTip">
+              <string>Close the ARMAX estimation window</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <!-- Model Selector -->
+         <layout class="QHBoxLayout" name="modelSelectorLayout">
+          <item>
+           <widget class="QLabel" name="modelSelectorLabel">
+            <property name="text">
+             <string>Model:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="model_selector_popup">
+            <property name="toolTip">
+             <string>Select a previously estimated model</string>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>1</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <!-- Last Model Button -->
+         <widget class="QPushButton" name="last_model_pushbutton">
+          <property name="text">
+           <string>Last Model</string>
+          </property>
+          <property name="toolTip">
+           <string>Load the last estimated model</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <!-- Message Text Label -->
+         <widget class="QLabel" name="message_text">
+          <property name="text">
+           <string></string>
+          </property>
+          <property name="wordWrap">
+           <bool>true</bool>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>1</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::StyledPanel</enum>
+          </property>
+          <property name="frameShadow">
+           <enum>QFrame::Sunken</enum>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <!-- RIGHT PANEL: Plot container for matplotlib FigureCanvasQTAgg -->
+       <!-- Ref: ARMAX.m:1277 — plot area 585x392 pixels, replaces plot_handle and plot_axes2 -->
+       <widget class="QWidget" name="plot_container">
+        <property name="minimumSize">
+         <size>
+          <width>585</width>
+          <height>392</height>
+         </size>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>1</horstretch>
+          <verstretch>1</verstretch>
+         </sizepolicy>
+        </property>
+        <layout class="QVBoxLayout" name="plotContainerLayout">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <!-- BOTTOM PANEL: Radio button groups for plot type selection -->
+     <layout class="QHBoxLayout" name="bottomRadioLayout">
+      <property name="spacing">
+       <number>6</number>
+      </property>
+      <item>
+       <!-- Original Data radio group -->
+       <widget class="QGroupBox" name="originalDataGroupBox">
+        <property name="title">
+         <string>Original Data</string>
+        </property>
+        <layout class="QHBoxLayout" name="originalDataLayout">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <property name="leftMargin">
+          <number>8</number>
+         </property>
+         <property name="topMargin">
+          <number>4</number>
+         </property>
+         <property name="rightMargin">
+          <number>8</number>
+         </property>
+         <property name="bottomMargin">
+          <number>4</number>
+         </property>
+         <item>
+          <widget class="QRadioButton" name="orig_raw_radio">
+           <property name="text">
+            <string>Raw Data</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+           <property name="toolTip">
+            <string>Plot raw original data</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="orig_acf_radio">
+           <property name="text">
+            <string>ACF</string>
+           </property>
+           <property name="toolTip">
+            <string>Plot autocorrelation function of original data</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="orig_pacf_radio">
+           <property name="text">
+            <string>PACF</string>
+           </property>
+           <property name="toolTip">
+            <string>Plot partial autocorrelation function of original data</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <!-- Residuals radio group -->
+       <widget class="QGroupBox" name="residualsGroupBox">
+        <property name="title">
+         <string>Residuals</string>
+        </property>
+        <layout class="QHBoxLayout" name="residualsLayout">
+         <property name="spacing">
+          <number>4</number>
+         </property>
+         <property name="leftMargin">
+          <number>8</number>
+         </property>
+         <property name="topMargin">
+          <number>4</number>
+         </property>
+         <property name="rightMargin">
+          <number>8</number>
+         </property>
+         <property name="bottomMargin">
+          <number>4</number>
+         </property>
+         <item>
+          <widget class="QRadioButton" name="resid_raw_radio">
+           <property name="text">
+            <string>Raw Residuals</string>
+           </property>
+           <property name="toolTip">
+            <string>Plot raw model residuals</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="resid_fit_radio">
+           <property name="text">
+            <string>Fit vs Original</string>
+           </property>
+           <property name="toolTip">
+            <string>Overlay original data and fitted values</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="resid_acf_radio">
+           <property name="text">
+            <string>Residual ACF</string>
+           </property>
+           <property name="toolTip">
+            <string>Plot autocorrelation function of residuals</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="resid_pacf_radio">
+           <property name="text">
+            <string>Residual PACF</string>
+           </property>
+           <property name="toolTip">
+            <string>Plot partial autocorrelation function of residuals</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <!-- Tests radio group -->
+       <widget class="QGroupBox" name="testsGroupBox">
+        <property name="title">
+         <string>Tests</string>
+        </property>
+        <layout class="QVBoxLayout" name="testsLayout">
+         <property name="spacing">
+          <number>2</number>
+         </property>
+         <property name="leftMargin">
+          <number>8</number>
+         </property>
+         <property name="topMargin">
+          <number>4</number>
+         </property>
+         <property name="rightMargin">
+          <number>8</number>
+         </property>
+         <property name="bottomMargin">
+          <number>4</number>
+         </property>
+         <item>
+          <widget class="QRadioButton" name="radiobutton18">
+           <property name="text">
+            <string>Original: LM/LB Tests</string>
+           </property>
+           <property name="toolTip">
+            <string>LM test or Ljung-Box statistics for original data</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="radiobutton19">
+           <property name="text">
+            <string>Residual: LM/LB Tests</string>
+           </property>
+           <property name="toolTip">
+            <string>LM test or Ljung-Box statistics for model residuals</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <!-- MENU BAR -->
+  <!-- Ref: ARMAX.m — export_menu_Callback, residual_menu_Callback, stderror_menu_Callback, about_menu_Callback -->
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>900</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="export_menu">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="action_export_tiff"/>
+    <addaction name="action_export_png"/>
+    <addaction name="action_export_eps"/>
+    <addaction name="separator"/>
+    <addaction name="action_copy_figure"/>
+   </widget>
+   <widget class="QMenu" name="residual_menu">
+    <property name="title">
+     <string>Residuals</string>
+    </property>
+    <addaction name="action_save_residuals"/>
+    <addaction name="action_save_std_residuals"/>
+   </widget>
+   <widget class="QMenu" name="stderror_menu">
+    <property name="title">
+     <string>Standard Errors</string>
+    </property>
+    <addaction name="action_heterorobust"/>
+    <addaction name="action_homoerror"/>
+   </widget>
+   <widget class="QMenu" name="menu_help">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="action_about"/>
+    <addaction name="separator"/>
+    <addaction name="action_initialization"/>
+   </widget>
+   <addaction name="export_menu"/>
+   <addaction name="residual_menu"/>
+   <addaction name="stderror_menu"/>
+   <addaction name="menu_help"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <!-- ACTIONS -->
+  <!-- File / Export actions — Ref: ARMAX.m:457-484 export callbacks -->
+  <action name="action_export_tiff">
+   <property name="objectName">
+    <string>action_export_tiff</string>
+   </property>
+   <property name="text">
+    <string>Export as TIFF...</string>
+   </property>
+  </action>
+  <action name="action_export_png">
+   <property name="objectName">
+    <string>action_export_png</string>
+   </property>
+   <property name="text">
+    <string>Export as PNG...</string>
+   </property>
+  </action>
+  <action name="action_export_eps">
+   <property name="objectName">
+    <string>action_export_eps</string>
+   </property>
+   <property name="text">
+    <string>Export as EPS...</string>
+   </property>
+  </action>
+  <action name="action_copy_figure">
+   <property name="objectName">
+    <string>action_copy_figure</string>
+   </property>
+   <property name="text">
+    <string>Copy Figure</string>
+   </property>
+  </action>
+  <!-- Residuals menu actions — Ref: ARMAX.m:443-453 residuals save callbacks -->
+  <action name="action_save_residuals">
+   <property name="objectName">
+    <string>action_save_residuals</string>
+   </property>
+   <property name="text">
+    <string>Save Residuals...</string>
+   </property>
+  </action>
+  <action name="action_save_std_residuals">
+   <property name="objectName">
+    <string>action_save_std_residuals</string>
+   </property>
+   <property name="text">
+    <string>Save Standardized Residuals...</string>
+   </property>
+  </action>
+  <!-- Standard Errors menu actions — Ref: ARMAX.m:762-785 hetero/homo callbacks -->
+  <action name="action_heterorobust">
+   <property name="objectName">
+    <string>action_heterorobust</string>
+   </property>
+   <property name="text">
+    <string>Heteroskedasticity-Robust</string>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+  </action>
+  <action name="action_homoerror">
+   <property name="objectName">
+    <string>action_homoerror</string>
+   </property>
+   <property name="text">
+    <string>Homoskedastic</string>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+  </action>
+  <!-- Help menu actions — Ref: ARMAX.m:735-739 about callback, :649 initialization -->
+  <action name="action_about">
+   <property name="objectName">
+    <string>action_about</string>
+   </property>
+   <property name="text">
+    <string>About...</string>
+   </property>
+  </action>
+  <action name="action_initialization">
+   <property name="objectName">
+    <string>action_initialization</string>
+   </property>
+   <property name="text">
+    <string>Initialization</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
