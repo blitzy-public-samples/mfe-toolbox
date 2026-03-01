@@ -1,0 +1,47 @@
+test_case,p_in,q_in,error_type_in,trunc_lag_in,p_out,q_out,error_type_out,trunc_lag_out,is_valid,expected_error
+default_normal_00,0,0,NORMAL,,0,0,1,1000,1,
+default_normal_10,1,0,NORMAL,,1,0,1,1000,1,
+default_normal_01,0,1,NORMAL,,0,1,1,1000,1,
+default_normal_11,1,1,NORMAL,,1,1,1,1000,1,
+default_studentst_11,1,1,STUDENTST,,1,1,2,1000,1,
+default_ged_11,1,1,GED,,1,1,3,1000,1,
+default_skewt_11,1,1,SKEWT,,1,1,4,1000,1,
+studentst_10,1,0,STUDENTST,,1,0,2,1000,1,
+ged_01,0,1,GED,,0,1,3,1000,1,
+skewt_00,0,0,SKEWT,,0,0,4,1000,1,
+studentst_01,0,1,STUDENTST,,0,1,2,1000,1,
+ged_10,1,0,GED,,1,0,3,1000,1,
+skewt_10,1,0,SKEWT,,1,0,4,1000,1,
+skewt_01,0,1,SKEWT,,0,1,4,1000,1,
+normal_00_default_errortype,0,0,,,0,0,1,1000,1,
+empty_p_defaults_0,,0,NORMAL,,0,0,1,1000,1,
+empty_q_defaults_0,0,,NORMAL,,0,0,1,1000,1,
+empty_pq_defaults_00,,,NORMAL,,0,0,1,1000,1,
+custom_trunclag_10,1,1,NORMAL,10,1,1,1,10,1,
+custom_trunclag_100,1,1,NORMAL,100,1,1,1,100,1,
+custom_trunclag_500,1,1,NORMAL,500,1,1,1,500,1,
+custom_trunclag_2000,0,0,NORMAL,2000,0,0,1,2000,1,
+custom_trunclag_50000,1,0,NORMAL,50000,1,0,1,50000,1,
+studentst_trunclag_200,1,1,STUDENTST,200,1,1,2,200,1,
+ged_trunclag_300,0,1,GED,300,0,1,3,300,1,
+skewt_trunclag_1500,1,0,SKEWT,1500,1,0,4,1500,1,
+invalid_p_2,2,0,NORMAL,,,,,,0,P must be either 0 or 1.
+invalid_p_negative,-1,0,NORMAL,,,,,,0,P must be either 0 or 1.
+invalid_p_3,3,1,NORMAL,,,,,,0,P must be either 0 or 1.
+invalid_p_99,99,0,NORMAL,,,,,,0,P must be either 0 or 1.
+invalid_q_2,0,2,NORMAL,,,,,,0,Q must be either 0 or 1.
+invalid_q_negative,0,-1,NORMAL,,,,,,0,Q must be either 0 or 1.
+invalid_q_3,1,3,NORMAL,,,,,,0,Q must be either 0 or 1.
+invalid_q_99,0,99,NORMAL,,,,,,0,Q must be either 0 or 1.
+invalid_error_type,1,1,INVALID,,,,,,0,errorType must be a string and one of: 'NORMAL' 'STUDENTST' 'GED' or 'SKEWT'.
+invalid_error_type_numeric,1,1,99,,,,,,0,errorType must be a string and one of: 'NORMAL' 'STUDENTST' 'GED' or 'SKEWT'.
+invalid_error_type_lowercase,1,1,normal,,,,,,0,errorType must be a string and one of: 'NORMAL' 'STUDENTST' 'GED' or 'SKEWT'.
+invalid_trunclag_small,1,1,NORMAL,5,,,,,0,TRUNCLAG must be a positive integer larger than 10.
+invalid_trunclag_9,1,1,NORMAL,9,,,,,0,TRUNCLAG must be a positive integer larger than 10.
+invalid_trunclag_0,1,1,NORMAL,0,,,,,0,TRUNCLAG must be a positive integer larger than 10.
+invalid_trunclag_negative,1,1,NORMAL,-5,,,,,0,TRUNCLAG must be a positive integer larger than 10.
+invalid_trunclag_noninteger,1,1,NORMAL,10.5,,,,,0,TRUNCLAG must be a positive integer larger than 10.
+invalid_data_empty,1,1,NORMAL,,,,,,0,epsilon is empty.
+invalid_data_row_vector,1,1,NORMAL,,,,,,0,epsilon series must be a column vector.
+invalid_data_matrix,1,1,NORMAL,,,,,,0,epsilon series must be a column vector.
+invalid_data_scalar,1,1,NORMAL,,,,,,0,epsilon series must be a column vector.
