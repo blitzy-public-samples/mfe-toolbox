@@ -1,0 +1,38 @@
+test_case,p_in,q_in,model_type_in,error_type_in,p_out,q_out,model_type_out,error_type_out,is_valid,expected_error
+default_agarch_normal_11,1,1,AGARCH,NORMAL,1,1,1,1,1,
+default_nagarch_normal_11,1,1,NAGARCH,NORMAL,1,1,2,1,1,
+default_agarch_studentst_11,1,1,AGARCH,STUDENTST,1,1,1,2,1,
+default_agarch_ged_11,1,1,AGARCH,GED,1,1,1,3,1,
+default_agarch_skewt_11,1,1,AGARCH,SKEWT,1,1,1,4,1,
+nagarch_studentst_11,1,1,NAGARCH,STUDENTST,1,1,2,2,1,
+nagarch_ged_11,1,1,NAGARCH,GED,1,1,2,3,1,
+nagarch_skewt_11,1,1,NAGARCH,SKEWT,1,1,2,4,1,
+higher_order_p,2,1,AGARCH,NORMAL,2,1,1,1,1,
+higher_order_q,1,2,AGARCH,NORMAL,1,2,1,1,1,
+high_order_pq,3,3,AGARCH,NORMAL,3,3,1,1,1,
+zero_q,1,0,AGARCH,NORMAL,1,0,1,1,1,
+large_p,5,1,AGARCH,NORMAL,5,1,1,1,1,
+large_q,1,5,AGARCH,NORMAL,1,5,1,1,1,
+large_pq,4,4,AGARCH,NORMAL,4,4,1,1,1,
+p2_q0_nagarch,2,0,NAGARCH,NORMAL,2,0,2,1,1,
+p1_q2_nagarch_studentst,1,2,NAGARCH,STUDENTST,1,2,2,2,1,
+p2_q2_agarch_ged,2,2,AGARCH,GED,2,2,1,3,1,
+p1_q3_nagarch_skewt,1,3,NAGARCH,SKEWT,1,3,2,4,1,
+p3_q1_agarch_studentst,3,1,AGARCH,STUDENTST,3,1,1,2,1,
+p1_q0_nagarch_ged,1,0,NAGARCH,GED,1,0,2,3,1,
+p2_q1_agarch_skewt,2,1,AGARCH,SKEWT,2,1,1,4,1,
+p1_q4_nagarch_normal,1,4,NAGARCH,NORMAL,1,4,2,1,1,
+lowercase_model_type,1,1,agarch,NORMAL,1,1,1,1,1,
+lowercase_nagarch,1,1,nagarch,NORMAL,1,1,2,1,1,
+invalid_p_zero,0,1,AGARCH,NORMAL,,,,,0,p must be positive scalar.
+invalid_p_negative,-1,1,AGARCH,NORMAL,,,,,0,p must be positive scalar.
+invalid_q_negative,1,-1,AGARCH,NORMAL,,,,,0,q must be a non-negative scalar.
+invalid_model_type,1,1,GARCH,NORMAL,,,,,0,MODEL_TYPE must be either 'AGARCH' or 'NAGARCH'
+invalid_model_type_tarch,1,1,TARCH,NORMAL,,,,,0,MODEL_TYPE must be either 'AGARCH' or 'NAGARCH'
+invalid_error_type,1,1,AGARCH,INVALID,,,,,0,error_type must be a string and one of: 'NORMAL' 'STUDENTST' 'GED' or 'SKEWT'.
+invalid_error_type_numeric,1,1,AGARCH,99,,,,,0,error_type must be a string and one of: 'NORMAL' 'STUDENTST' 'GED' or 'SKEWT'.
+invalid_error_type_lowercase,1,1,AGARCH,normal,,,,,0,error_type must be a string and one of: 'NORMAL' 'STUDENTST' 'GED' or 'SKEWT'.
+invalid_data_empty,1,1,AGARCH,NORMAL,,,,,0,epsilon is empty.
+invalid_data_row_vector,1,1,AGARCH,NORMAL,,,,,0,epsilon series must be a column vector.
+invalid_data_matrix,1,1,AGARCH,NORMAL,,,,,0,epsilon series must be a column vector.
+invalid_data_scalar,1,1,AGARCH,NORMAL,,,,,0,epsilon series must be a column vector.
