@@ -1,0 +1,46 @@
+# Correlation half-vectorization (corr_vech) test fixtures
+# Source: utility/corr_vech.m - Kevin Sheppard MFE Toolbox v4.0
+# Generated from Octave-verified MATLAB reference outputs
+# corr_vech extracts strictly lower-triangular off-diagonal elements
+# in MATLAB column-major order from a K x K symmetric correlation matrix
+# Output length: K*(K-1)/2 elements
+#
+# Format: Each test case has K rows of type=input (the correlation matrix)
+#         followed by 1 row of type=output (the expected corr_vech result)
+#   type=input: row_idx is the matrix row; val_0..val_(K-1) are the column values
+#   type=output: row_idx=0; val_0..val_(K*(K-1)/2-1) are the output vector elements
+#   Empty trailing cells indicate unused columns for smaller dimensions
+#
+test_case,k,type,row_idx,val_0,val_1,val_2,val_3,val_4,val_5,val_6,val_7,val_8,val_9
+test_1_identity_2x2,2,input,0,1,0,,,,,,,,
+test_1_identity_2x2,2,input,1,0,1,,,,,,,,
+test_1_identity_2x2,2,output,0,0,,,,,,,,,
+test_2_positive_2x2,2,input,0,1,0.5,,,,,,,,
+test_2_positive_2x2,2,input,1,0.5,1,,,,,,,,
+test_2_positive_2x2,2,output,0,0.5,,,,,,,,,
+test_3_negative_2x2,2,input,0,1,-0.7,,,,,,,,
+test_3_negative_2x2,2,input,1,-0.7,1,,,,,,,,
+test_3_negative_2x2,2,output,0,-0.7,,,,,,,,,
+test_4_mixed_3x3,3,input,0,1,0.3,0.6,,,,,,,
+test_4_mixed_3x3,3,input,1,0.3,1,0.5,,,,,,,
+test_4_mixed_3x3,3,input,2,0.6,0.5,1,,,,,,,
+test_4_mixed_3x3,3,output,0,0.3,0.6,0.5,,,,,,,
+test_5_negative_3x3,3,input,0,1,-0.5,0.8,,,,,,,
+test_5_negative_3x3,3,input,1,-0.5,1,-0.3,,,,,,,
+test_5_negative_3x3,3,input,2,0.8,-0.3,1,,,,,,,
+test_5_negative_3x3,3,output,0,-0.5,0.8,-0.3,,,,,,,
+test_6_identity_3x3,3,input,0,1,0,0,,,,,,,
+test_6_identity_3x3,3,input,1,0,1,0,,,,,,,
+test_6_identity_3x3,3,input,2,0,0,1,,,,,,,
+test_6_identity_3x3,3,output,0,0,0,0,,,,,,,
+test_7_mixed_4x4,4,input,0,1,0.2,0.4,0.1,,,,,,
+test_7_mixed_4x4,4,input,1,0.2,1,0.3,0.5,,,,,,
+test_7_mixed_4x4,4,input,2,0.4,0.3,1,0.7,,,,,,
+test_7_mixed_4x4,4,input,3,0.1,0.5,0.7,1,,,,,,
+test_7_mixed_4x4,4,output,0,0.2,0.4,0.1,0.3,0.5,0.7,,,,
+test_8_random_5x5,5,input,0,1,-0.16343282,0.04486628,-0.10183222,-0.12618359,,,,,
+test_8_random_5x5,5,input,1,-0.16343282,1,0.12276426,0.03821481,0.0571554,,,,,
+test_8_random_5x5,5,input,2,0.04486628,0.12276426,1,0.00852457,0.04281939,,,,,
+test_8_random_5x5,5,input,3,-0.10183222,0.03821481,0.00852457,1,0.01835847,,,,,
+test_8_random_5x5,5,input,4,-0.12618359,0.0571554,0.04281939,0.01835847,1,,,,,
+test_8_random_5x5,5,output,0,-0.16343282,0.04486628,-0.10183222,-0.12618359,0.12276426,0.03821481,0.0571554,0.00852457,0.04281939,0.01835847
