@@ -1,0 +1,38 @@
+test_case,p_in,q_in,error_type_in,igarch_type_in,constant_in,p_out,q_out,error_type_out,igarch_type_out,constant_out,is_valid,expected_error
+default_normal_11,1,1,NORMAL,2,1,1,1,1,2,1.0,1,
+default_studentst_11,1,1,STUDENTST,2,1,1,1,2,2,1.0,1,
+default_ged_11,1,1,GED,2,1,1,1,3,2,1.0,1,
+default_skewt_11,1,1,SKEWT,2,1,1,1,4,2,1.0,1,
+igarch_type_1,1,1,NORMAL,1,1,1,1,1,1,1.0,1,
+igarch_type_2,1,1,NORMAL,2,1,1,1,1,2,1.0,1,
+constant_0,1,1,NORMAL,2,0,1,1,1,2,0.0,1,
+constant_1,1,1,NORMAL,2,1,1,1,1,2,1.0,1,
+higher_order_p,2,1,NORMAL,2,1,2,1,1,2,1.0,1,
+higher_order_q,1,2,NORMAL,2,1,1,2,1,2,1.0,1,
+high_order_both,3,3,NORMAL,2,1,3,3,1,2,1.0,1,
+studentst_type1,1,1,STUDENTST,1,1,1,1,2,1,1.0,1,
+ged_type1,1,1,GED,1,1,1,1,3,1,1.0,1,
+skewt_type1,1,1,SKEWT,1,1,1,1,4,1,1.0,1,
+studentst_no_constant,1,1,STUDENTST,2,0,1,1,2,2,0.0,1,
+ged_no_constant,1,1,GED,2,0,1,1,3,2,0.0,1,
+skewt_no_constant,1,1,SKEWT,2,0,1,1,4,2,0.0,1,
+large_p,5,1,NORMAL,2,1,5,1,1,2,1.0,1,
+large_q,1,5,NORMAL,2,1,1,5,1,2,1.0,1,
+large_pq,4,4,NORMAL,2,1,4,4,1,2,1.0,1,
+p2_q1_type1_const0,2,1,NORMAL,1,0,2,1,1,1,0.0,1,
+p1_q3_ged_type2,1,3,GED,2,1,1,3,3,2,1.0,1,
+invalid_p_zero,0,1,NORMAL,2,1,,,,,,0,P must be positive scalar.
+invalid_p_negative,-1,1,NORMAL,2,1,,,,,,0,P must be positive scalar.
+invalid_q_zero,1,0,NORMAL,2,1,,,,,,0,Q must be a positive scalar.
+invalid_q_negative,1,-1,NORMAL,2,1,,,,,,0,Q must be a positive scalar.
+invalid_error_type,1,1,INVALID,2,1,,,,,,0,errorType must be a string and one of: 'NORMAL' 'STUDENTST' 'GED' or 'SKEWT'.
+invalid_error_type_numeric,1,1,99,2,1,,,,,,0,errorType must be a string and one of: 'NORMAL' 'STUDENTST' 'GED' or 'SKEWT'.
+invalid_igarch_type_3,1,1,NORMAL,3,1,,,,,,0,IGARCHTYPE must be either 1 or 2
+invalid_igarch_type_0,1,1,NORMAL,0,1,,,,,,0,IGARCHTYPE must be either 1 or 2
+invalid_igarch_type_neg,1,1,NORMAL,-1,1,,,,,,0,IGARCHTYPE must be either 1 or 2
+invalid_constant_2,1,1,NORMAL,2,2,,,,,,0,CONSTANT must be either 0 or 1.
+invalid_constant_neg,1,1,NORMAL,2,-1,,,,,,0,CONSTANT must be either 0 or 1.
+invalid_data_empty,1,1,NORMAL,2,1,,,,,,0,EPSILON is empty.
+invalid_data_row_vector,1,1,NORMAL,2,1,,,,,,0,EPSILON series must be a column vector.
+invalid_data_matrix,1,1,NORMAL,2,1,,,,,,0,EPSILON series must be a column vector.
+invalid_data_scalar,1,1,NORMAL,2,1,,,,,,0,EPSILON series must be a column vector.
