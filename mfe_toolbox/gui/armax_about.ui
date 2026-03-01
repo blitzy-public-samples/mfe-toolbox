@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Qt Designer UI file for ARMAXAboutDialog.
+  Faithfully reproduces the layout of MATLAB GUIDE GUI/ARMAX_about.fig.
+
+  Widget mapping from MATLAB GUIDE to Qt:
+    figure1      → QDialog  ARMAXAboutDialog  (modal About dialog)
+    axes1        → QLabel   icon_label        (Oxford logo image via QPixmap)
+    text1        → QLabel   text1             (About description / credits text)
+    pushbutton1  → QPushButton pushbutton1    (OK / Accept button)
+    pushbutton2  → QPushButton pushbutton2    (Secondary / Cancel button)
+
+  Ref: GUI/ARMAX_about.m lines 47-126 (OpeningFcn), 141-169 (button callbacks),
+       172-184 (CloseRequestFcn), 188-206 (KeyPressFcn)
+-->
+<ui version="4.0">
+ <class>ARMAXAboutDialog</class>
+ <widget class="QDialog" name="ARMAXAboutDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>350</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>About</string>
+  </property>
+  <property name="modal">
+   <bool>true</bool>
+  </property>
+  <property name="sizeGripEnabled">
+   <bool>false</bool>
+  </property>
+  <layout class="QVBoxLayout" name="main_layout">
+   <property name="leftMargin">
+    <number>16</number>
+   </property>
+   <property name="topMargin">
+    <number>16</number>
+   </property>
+   <property name="rightMargin">
+    <number>16</number>
+   </property>
+   <property name="bottomMargin">
+    <number>16</number>
+   </property>
+   <property name="spacing">
+    <number>12</number>
+   </property>
+   <!-- Top: Oxford logo image display (replaces MATLAB axes1)
+        Ref: ARMAX_about.m:106-120 — loads OxLogo.mat, displays in axes1 -->
+   <item>
+    <widget class="QLabel" name="icon_label">
+     <property name="minimumSize">
+      <size>
+       <width>128</width>
+       <height>128</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>320</width>
+       <height>160</height>
+      </size>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <!-- Middle: About text / credits label (replaces MATLAB text1)
+        Ref: ARMAX_about.m:71 — set(handles.text1, 'String', varargin{index+1}) -->
+   <item>
+    <widget class="QLabel" name="text1">
+     <property name="text">
+      <string>MFE Toolbox — ARMAX Estimation GUI
+
+Version 4.0
+
+Originally developed by Kevin Sheppard
+University of Oxford
+
+Python migration powered by Blitzy.</string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <!-- Vertical spacer to push buttons to the bottom -->
+   <item>
+    <spacer name="vertical_spacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>10</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <!-- Bottom: Button bar with OK and secondary button
+        Ref: ARMAX_about.m:141-154 (pushbutton1_Callback),
+             ARMAX_about.m:156-169 (pushbutton2_Callback) -->
+   <item>
+    <layout class="QHBoxLayout" name="button_layout">
+     <property name="spacing">
+      <number>8</number>
+     </property>
+     <item>
+      <spacer name="button_spacer_left">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushbutton1">
+       <property name="text">
+        <string>OK</string>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>80</width>
+         <height>28</height>
+        </size>
+       </property>
+       <property name="default">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pushbutton2">
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>80</width>
+         <height>28</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="button_spacer_right">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
