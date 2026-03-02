@@ -1,0 +1,94 @@
+# seconds2wall fixture data — Octave/MATLAB reference for parity testing
+# Source: realized/seconds2wall.m — Seconds past midnight to wall clock conversion
+# Human-readable CSV counterpart of seconds2wall.npy
+# Validation: numpy.testing.assert_allclose(actual, expected, atol=1e-6, rtol=1e-4)
+#
+# Function signature:
+#   wall = seconds2wall(seconds)
+#
+# Converts seconds past midnight to wall-clock times in HHMMSS numeric format
+# (e.g. 93000 = 09:30:00, 160000 = 16:00:00).
+#
+# Conversion logic (Ref: seconds2wall.m:38-41):
+#   hr   = floor(seconds / 3600)
+#   mm   = floor((seconds - hr*3600) / 60)
+#   ss   = rem(seconds, 60)
+#   wall = hr * 10000 + mm * 100 + ss
+#
+# Input constraints (from seconds2wall.m:29-32):
+#   - 0 <= seconds < 86400 (valid range: midnight to end of day)
+#   - seconds is cast to double to protect against integer inputs
+#
+# Output descriptions:
+#   wall:  m-by-1 column vector of wall times (e.g. 93047, 134529, etc.)
+#
+# Conversion reference examples:
+#   seconds2wall(0)      = 0           (00:00:00 midnight)
+#   seconds2wall(34200)  = 93000       (09:30:00 US market open)
+#   seconds2wall(43200)  = 120000      (12:00:00 noon)
+#   seconds2wall(57600)  = 160000      (16:00:00 US market close)
+#   seconds2wall(86399)  = 235959      (23:59:59 end of day)
+#   seconds2wall(36934)  = 101534      (10:15:34 specific HH:MM:SS)
+#   seconds2wall(34200.5)= 93000.5     (09:30:00.5 sub-second precision)
+#
+# Test scenarios:
+#   1. market_open:        seconds=34200  -> wall=93000 (US equity market open)
+#   2. market_close:       seconds=57600  -> wall=160000 (US equity market close)
+#   3. market_range:       14 second values every 1800s (30 min) from 9:30-16:00
+#   4. midnight:           seconds=0 -> wall=0 (boundary condition)
+#   5. sub_second:         seconds with fractional parts (34200.5, 57600.75)
+#   6. octave_reference:   seconds=43200 -> wall=120000 (from generate_fixtures.m)
+#   7. late_evening:       seconds=86399 -> wall=235959 (near end of valid range)
+#   8. specific_hms:       seconds=36934 -> wall=101534 (arbitrary HH:MM:SS)
+#   9. early_morning:      seconds=5025  -> wall=12345 (01:23:45)
+#
+# Generated with: GNU Octave 8.4.0, MFE Toolbox Version 4.0
+# Ref: seconds2wall.m:38-41 — core conversion algorithm
+#
+scenario,output_name,index,value
+market_open,seconds_input,0,3.4200000000000000e+04
+market_open,wall,0,9.3000000000000000e+04
+market_close,seconds_input,0,5.7600000000000000e+04
+market_close,wall,0,1.6000000000000000e+05
+market_range,seconds_input,0,3.4200000000000000e+04
+market_range,seconds_input,1,3.6000000000000000e+04
+market_range,seconds_input,2,3.7800000000000000e+04
+market_range,seconds_input,3,3.9600000000000000e+04
+market_range,seconds_input,4,4.1400000000000000e+04
+market_range,seconds_input,5,4.3200000000000000e+04
+market_range,seconds_input,6,4.5000000000000000e+04
+market_range,seconds_input,7,4.6800000000000000e+04
+market_range,seconds_input,8,4.8600000000000000e+04
+market_range,seconds_input,9,5.0400000000000000e+04
+market_range,seconds_input,10,5.2200000000000000e+04
+market_range,seconds_input,11,5.4000000000000000e+04
+market_range,seconds_input,12,5.5800000000000000e+04
+market_range,seconds_input,13,5.7600000000000000e+04
+market_range,wall,0,9.3000000000000000e+04
+market_range,wall,1,1.0000000000000000e+05
+market_range,wall,2,1.0300000000000000e+05
+market_range,wall,3,1.1000000000000000e+05
+market_range,wall,4,1.1300000000000000e+05
+market_range,wall,5,1.2000000000000000e+05
+market_range,wall,6,1.2300000000000000e+05
+market_range,wall,7,1.3000000000000000e+05
+market_range,wall,8,1.3300000000000000e+05
+market_range,wall,9,1.4000000000000000e+05
+market_range,wall,10,1.4300000000000000e+05
+market_range,wall,11,1.5000000000000000e+05
+market_range,wall,12,1.5300000000000000e+05
+market_range,wall,13,1.6000000000000000e+05
+midnight,seconds_input,0,0.0000000000000000e+00
+midnight,wall,0,0.0000000000000000e+00
+sub_second,seconds_input,0,3.4200500000000000e+04
+sub_second,seconds_input,1,5.7600750000000000e+04
+sub_second,wall,0,9.3000500000000000e+04
+sub_second,wall,1,1.6000075000000000e+05
+octave_reference,seconds_input,0,4.3200000000000000e+04
+octave_reference,wall,0,1.2000000000000000e+05
+late_evening,seconds_input,0,8.6399000000000000e+04
+late_evening,wall,0,2.3595900000000000e+05
+specific_hms,seconds_input,0,3.6934000000000000e+04
+specific_hms,wall,0,1.0153400000000000e+05
+early_morning,seconds_input,0,5.0250000000000000e+03
+early_morning,wall,0,1.2345000000000000e+04
