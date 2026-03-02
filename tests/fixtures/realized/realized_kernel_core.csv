@@ -1,0 +1,85 @@
+# realized_kernel_core fixture data — Octave/MATLAB reference for parity testing
+# Generated from synthetic high-frequency data: rng(42,'twister'), T_hf=2000,
+#   hf_returns=0.0001*randn(T_hf,1), hf_prices=100*exp(cumsum(hf_returns)),
+#   rkc_returns=diff(log(hf_prices))  [length 1999]
+# Source: realized/realized_kernel_core.m — Realized Kernel core computation
+# Human-readable CSV counterpart of realized_kernel_core.npy
+# Validation: numpy.testing.assert_allclose(actual, expected, atol=1e-6, rtol=1e-4)
+#
+# Data Source: generate_fixtures.m synthetic data
+#   T_hf = 2000 observations
+#   hf_returns ~ N(0, 0.0001^2)
+#   hf_prices: geometric random walk starting at 100
+#   rkc_returns: diff(log(hf_prices)), length = 1999
+#   RNG state: rng(42,'twister') then epsilon(1000), data_mv(1000x3), then hf_returns(2000)
+#
+# Function signature:
+#   rk = realized_kernel_core(returns, weights, options)
+#
+# Inputs:
+#   returns: m x 1 column vector of returns (log returns of filtered prices)
+#   weights: H x 1 column vector of kernel weights for lags 1, 2, ..., H
+#            H should be much smaller than m
+#   options: struct with fields:
+#     endTreatment: 'jitter' or 'stagger'
+#       jitter:  use all returns for autocovariances — gamma_h = returns(1:m-h)' * returns(h+1:m)
+#                and gamma0 = returns' * returns
+#       stagger: use central returns only — returnsBase = returns(H+1:m-H),
+#                gamma_minus(h) = returns(H+1-h:m-H-h)' * returnsBase,
+#                gamma_plus(h) = returnsBase' * returns(H+1+h:m-H+h),
+#                gamma0 = returnsBase' * returnsBase
+#     maxBandwidthPerc: float or [] — max bandwidth as fraction of filteredN
+#     maxBandwidth:     int or []   — absolute max bandwidth
+#
+# Output:
+#   rk: scalar realized kernel value = gamma0 + weights' * (gammaMinus + gammaPlus)
+#       When weights is empty, rk = gamma0 (with warning).
+#
+# Kernel weight construction for test scenarios:
+#   Parzen (flat-top):   k(x) = 1 - 6*x^2 + 6*x^3  for x <= 0.5
+#                               2*(1-x)^3             for 0.5 < x <= 1
+#                        where x = (1:H)'/H
+#   Bartlett:            k(x) = 1 - x, where x = (1:H)'/H
+#   QS (Quadratic Spectral): k(x) = (25/(12*pi^2*x^2))*(sin(6*pi*x/5)/(6*pi*x/5) - cos(6*pi*x/5))
+#                             where x = (1:H)'/H
+#   Tukey-Hanning (TH2): k(x) = ((1 + cos(pi*x))/2)^2, where x = (1:H)'/H
+#
+# Endpoint treatment:
+#   jitter:  All returns used; gammaMinus = gammaPlus (symmetric).
+#            gamma0 = sum(returns.^2). This is the default treatment from realized_kernel.
+#   stagger: Central returns only; gamma0 = sum(returnsBase.^2) where returnsBase excludes
+#            the first H and last H returns. Yields smaller gamma0 since fewer returns used.
+#
+# Test scenarios:
+#   1. parzen_stagger_H20:        Parzen kernel, H=20, stagger — baseline flat-top, no jitter
+#   2. bartlett_jitter_H10:       Bartlett kernel, H=10, jitter — simple triangular, full returns
+#   3. bartlett_stagger_H10:      Bartlett kernel, H=10, stagger — compare jitter vs stagger effect
+#   4. qs_jitter_H50:             QS kernel, H=50, jitter — large bandwidth, non-compact support
+#   5. tukey_hanning_jitter_H30:  Tukey-Hanning 2nd order, H=30, jitter
+#   6. parzen_jitter_H20:         Parzen kernel, H=20, jitter — compare with scenario 1
+#   7. bartlett_jitter_H5:        Bartlett kernel, H=5, jitter — short bandwidth
+#   8. empty_weights_jitter:      Empty weights [], jitter — gamma0 only (zero-lag RV)
+#   9. qs_stagger_H50:            QS kernel, H=50, stagger — compare with scenario 4
+#  10. tukey_hanning_stagger_H30: Tukey-Hanning 2nd order, H=30, stagger — compare with scenario 5
+#
+# Notes:
+#   - All kernel weights are computed analytically from the kernel functions above,
+#     NOT via realized_kernel_weights.m, to isolate realized_kernel_core testing.
+#   - Scenario 8 (empty weights) triggers a warning in MATLAB and returns gamma0 only.
+#   - Jitter vs stagger comparison: with jitter, gamma0 uses all 1999 returns so rk is
+#     typically larger; stagger excludes 2*H returns from gamma0, yielding a smaller base.
+#   - QS kernel weights are non-compact (slowly decaying oscillation), so H=50 still has
+#     significant weight mass, inflating the realized kernel vs compact kernels.
+#   - All values verified with Octave 8.4.0 using MFE Toolbox Version 4.0.
+#
+scenario,kernel,bandwidth_H,endTreatment,output_name,value
+parzen_stagger_H20,parzen,20,stagger,rk,2.0784877936061428e-05
+bartlett_jitter_H10,bartlett,10,jitter,rk,2.0698936188002620e-05
+bartlett_stagger_H10,bartlett,10,stagger,rk,2.0139284529337216e-05
+qs_jitter_H50,qs,50,jitter,rk,2.5541682300163740e-05
+tukey_hanning_jitter_H30,tukey_hanning,30,jitter,rk,2.2792934597959809e-05
+parzen_jitter_H20,parzen,20,jitter,rk,2.1496775859727893e-05
+bartlett_jitter_H5,bartlett,5,jitter,rk,1.9814996324209086e-05
+empty_weights_jitter,none,0,jitter,rk,2.0079670698599861e-05
+qs_stagger_H50,qs,50,stagger,rk,2.3114062811466266e-05
+tukey_hanning_stagger_H30,tukey_hanning,30,stagger,rk,2.2051962174533068e-05
