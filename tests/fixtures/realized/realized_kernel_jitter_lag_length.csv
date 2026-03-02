@@ -1,0 +1,68 @@
+# realized_kernel_jitter_lag_length fixture data — Octave/MATLAB reference for parity testing
+# Source: realized/realized_kernel_jitter_lag_length.m — Optimal endpoint jitter lag length
+# Human-readable CSV counterpart of realized_kernel_jitter_lag_length.npy
+# Validation: numpy.testing.assert_allclose(actual, expected, atol=1e-6, rtol=1e-4)
+#
+# Function signature:
+#   jitterLags = realized_kernel_jitter_lag_length(noiseEstimate, iqEstimate, kernel, N)
+#
+# Inputs:
+#   noiseEstimate: Estimated variance of microstructure noise (non-negative scalar)
+#   iqEstimate:    Estimated integrated quarticity (non-negative scalar)
+#   kernel:        Kernel type string (nonflatparzen, qs, bartlett, tukeyhanning, bnhls, etc.)
+#   N:             Number of price observations (positive integer)
+#
+# Output:
+#   jitterLags:    Optimal number of endpoint jitter lags (integer >= 1)
+#                  If 1, no pre-averaging/jittering is indicated.
+#
+# Algorithm:
+#   1. Look up kernel-specific constants (cStar, k00, kernelType) from hardcoded table
+#   2. Compute asymptotic variance (avar) based on kernelType:
+#      - kernelType=1 (flat-top n^{1/4}): avar = 16/3 * g * noise * IQ^{3/4}
+#      - kernelType=2 (flat-top n^{1/6}): avar = 6 * cStar * k00 * noise^{4/3} * IQ^{2/3}
+#      - kernelType=3 (non-flat-top n^{1/5}): avar = 5 * cStar * k00 * noise^{4/5} * IQ^{4/5}
+#   3. Minimize MSE(m) = 8 * noise^2 * m^{-2} + avar * (N-m)^{-2*power} for m=1,...,N-1
+#   4. Return argmin(MSE) as jitterLags
+#
+# Kernel mapping note:
+#   'tukeyhanning' in Python maps to 'thinf' in MATLAB source (Tukey-Hanning kernel with
+#   infinite lag order). The MATLAB function uses 'thinf'; the Python implementation accepts
+#   both 'thinf' and 'tukeyhanning' as equivalent names.
+#   Ref: realized_kernel_jitter_lag_length.m:19,162-165
+#
+# Kernel types tested:
+#   nonflatparzen:  Non-flat-top Parzen kernel (kernelType=3, n^{1/5} rate) [RECOMMENDED]
+#   qs:             Quadratic Spectral kernel (kernelType=3, n^{1/5} rate)
+#   bartlett:       Bartlett kernel (kernelType=2, n^{1/6} rate, equiv. two-scale estimator)
+#   tukeyhanning:   Tukey-Hanning infinite kernel (kernelType=3, n^{1/5} rate, MATLAB name 'thinf')
+#   bnhls:          Barndorff-Nielsen, Hansen, Lunde, Shephard kernel (kernelType=3, n^{1/5} rate)
+#
+# Test scenarios:
+#   1. nonflatparzen_default:     kernel='nonflatparzen', noise=1e-6, IQ=1e-8, N=2000
+#   2. qs_default:                kernel='qs', noise=1e-6, IQ=1e-8, N=2000
+#   3. bartlett_default:          kernel='bartlett', noise=1e-6, IQ=1e-8, N=2000
+#   4. tukeyhanning_default:      kernel='tukeyhanning', noise=1e-6, IQ=1e-8, N=2000
+#   5. bnhls_default:             kernel='bnhls', noise=1e-6, IQ=1e-8, N=2000
+#   6. nonflatparzen_N500:        kernel='nonflatparzen', noise=1e-6, IQ=1e-8, N=500
+#   7. nonflatparzen_N5000:       kernel='nonflatparzen', noise=1e-6, IQ=1e-8, N=5000
+#   8. nonflatparzen_highnoise:   kernel='nonflatparzen', noise=1e-4, IQ=1e-8, N=2000
+#   9. nonflatparzen_lownoise:    kernel='nonflatparzen', noise=1e-8, IQ=1e-8, N=2000
+#
+# Notes:
+#   - jitterLags is always an integer (argmin index from MSE grid search over m=1..N-1)
+#   - When noise is small relative to IQ and N, jitterLags approaches 1 (no jitter needed)
+#   - When noise is large, jitterLags increases (more averaging over endpoints required)
+#   - bartlett kernel (kernelType=2) yields larger jitterLags due to slower n^{1/6} convergence rate
+#   - All values verified with Octave 8.4.0 using MFE Toolbox Version 4.0.
+#
+scenario,noiseEstimate,iqEstimate,kernel,N,output_name,value
+nonflatparzen_default,1.0e-06,1.0e-08,nonflatparzen,2000,jitterLags,38
+qs_default,1.0e-06,1.0e-08,qs,2000,jitterLags,39
+bartlett_default,1.0e-06,1.0e-08,bartlett,2000,jitterLags,172
+tukeyhanning_default,1.0e-06,1.0e-08,tukeyhanning,2000,jitterLags,36
+bnhls_default,1.0e-06,1.0e-08,bnhls,2000,jitterLags,35
+nonflatparzen_N500,1.0e-06,1.0e-08,nonflatparzen,500,jitterLags,20
+nonflatparzen_N5000,1.0e-06,1.0e-08,nonflatparzen,5000,jitterLags,58
+nonflatparzen_highnoise,1.0e-04,1.0e-08,nonflatparzen,2000,jitterLags,228
+nonflatparzen_lownoise,1.0e-08,1.0e-08,nonflatparzen,2000,jitterLags,6
