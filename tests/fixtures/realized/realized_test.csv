@@ -1,0 +1,157 @@
+# realized_test fixture data — MATLAB/Octave reference for integration test parity testing
+# Generated from ES_20090817.mat high-frequency E-mini S&P 500 futures trade data (Aug 17 2009)
+# Source: realized/realized_test.m — Integration test script exercising multiple realized estimators
+# Human-readable CSV counterpart of realized_test.npy
+# Validation: numpy.testing.assert_allclose(actual, expected, atol=1e-6, rtol=1e-4)
+#
+# Data Source: ES_20090817.mat
+#   N_trades = 72059
+#   price range: [976.500000, 985.000000]
+#   time range: [83000.026000 (8:30 AM), 145959.981000 (2:59 PM)] wall clock (HHMMSS)
+#   timeType = 'wall'
+#
+# realized_test.m is a TEST SCRIPT (not a function). It loads ES_20090817.mat and
+# runs integration tests across multiple realized estimators with various sampling
+# configurations, as documented in Kevin Sheppard's MFE Toolbox v4.0.
+#
+# Test Sections:
+#   1. optimal_sampling: realized_variance_optimal_sampling (Bandi-Russell)
+#      — BusinessTime sampling with varying subsample counts
+#   2. twoscale: realized_twoscale_variance (Zhang, Mykland, Ait-Sahalia 2005)
+#      — Two-scale RV with K=15 slow-scale subsampling
+#   3. rv_loop: realized_variance across 5 sampling types
+#      — CalendarTime(60s,300s), CalendarUniform(78,390), BusinessTime(50,300),
+#        BusinessUniform(68,390), Fixed(300s)
+#   4. sv_loop: realized_semivariance (negative/positive decomposition)
+#   5. bv_loop: realized_bipower_variation with skip=0 and skip=1
+#   6. qt_loop: realized_quarticity — tripower (BNS) and quadpower variants
+#   7. rc_loop: realized_covariance (diagonal, same asset)
+#      — Excluded for BusinessTime/BusinessUniform per realized_test.m:78
+#   8. quantile_variance: realized_quantile_variance with synthetic Brownian motion data
+#      — r = randn(390*300,1)/sqrt(390*300); p=exp(cumsum([0;r]))
+#   9. range: realized_range at CalendarTime 300s
+#  10. signature_plot: RV at sampling intervals [10,30,60,120,300,600,1200,1800,3600]s
+#      — Demonstrates microstructure noise signature (RV decreasing with coarser sampling)
+#
+# Estimator References:
+#   realized_variance: sum(r_i^2) where r_i = log(P_{i+1}/P_i)
+#   realized_semivariance: rsvn = sum(r_i^2 * 1(r_i<0)), rsvp = sum(r_i^2 * 1(r_i>=0))
+#   realized_bipower_variation: (pi/2)*sum(|r_i|*|r_{i-1-skip}|) (BNS 2004)
+#   realized_quarticity: tripower = (n/3)*(n/(n-2))*sum(|r|^{4/3}*|r|^{4/3}*|r|^{4/3})/mu_{4/3}^3
+#   realized_twoscale_variance: RV_slow - (nbar/n)*RV_fast with K subsamples
+#   realized_covariance: sum(r1_i * r2_i) for synchronized returns
+#
+# Sampling types (matching MATLAB MFE Toolbox conventions):
+#   CalendarTime: Previous-tick interpolation at fixed second intervals
+#   CalendarUniform: Equally spaced N observations in calendar time
+#   BusinessTime: Equally spaced N observations in tick/trade count
+#   BusinessUniform: Same as BusinessTime (uniform tick spacing)
+#   Fixed: Previous-tick interpolation at user-specified time grid
+#
+# Column descriptions:
+#   test_id: Sequential test case identifier
+#   section: Test section name (optimal_sampling, twoscale, rv_loop, etc.)
+#   estimator: Realized estimator function name
+#   sampling_type: Sampling scheme (CalendarTime, BusinessTime, etc.)
+#   sampling_interval: Interval parameter (seconds for CalendarTime, ticks for BusinessTime)
+#   subsamples: Number of subsamples (1=no subsampling)
+#   output_name: Name of the output variable
+#   value: Reference numerical value (float64, scientific notation)
+#
+test_id,section,estimator,sampling_type,sampling_interval,subsamples,output_name,value
+1,optimal_sampling,realized_variance_optimal_sampling,BusinessTime,1,1,rv,8.3876162510462831e-05
+2,optimal_sampling,realized_variance_optimal_sampling,BusinessTime,1,1,rvts_debiased,9.2333904207007119e-05
+3,optimal_sampling,realized_variance_optimal_sampling,BusinessTime,1,5,rv,8.3876162510462831e-05
+4,optimal_sampling,realized_variance_optimal_sampling,BusinessTime,1,5,rvts_debiased,9.2333904207007119e-05
+5,optimal_sampling,realized_variance_optimal_sampling,BusinessTime,1,10,rv,8.3876162510462831e-05
+6,optimal_sampling,realized_variance_optimal_sampling,BusinessTime,1,10,rvts_debiased,9.2333904207007119e-05
+7,twoscale,realized_twoscale_variance,BusinessTime,15,15,rvts,9.2333904207007119e-05
+8,rv_loop,realized_variance,CalendarTime,60,1,rv,9.1605640888479020e-05
+9,rv_loop,realized_variance,CalendarTime,60,5,rv_ss5,9.1605640888479020e-05
+10,sv_loop,realized_semivariance,CalendarTime,60,1,rsvn,5.2693548672045289e-05
+11,sv_loop,realized_semivariance,CalendarTime,60,1,rsvp,3.8912092216433731e-05
+12,bv_loop,realized_bipower_variation,CalendarTime,60,1,bv_skip0,7.5919526127951403e-05
+13,bv_loop,realized_bipower_variation,CalendarTime,60,1,bv_skip1,8.9640212141331874e-05
+14,qt_loop,realized_quarticity,CalendarTime,60,1,qt_tripower,3.2670840146464978e-09
+15,qt_loop,realized_quarticity,CalendarTime,60,1,qt_quadpower,2.1253524995341102e-09
+16,rc_loop,realized_covariance,CalendarTime,60,1,rc_diag,9.1605640888479020e-05
+17,rv_loop,realized_variance,CalendarTime,300,1,rv,6.4493300322992570e-05
+18,rv_loop,realized_variance,CalendarTime,300,5,rv_ss5,6.4493300322992570e-05
+19,sv_loop,realized_semivariance,CalendarTime,300,1,rsvn,4.1228761428895838e-05
+20,sv_loop,realized_semivariance,CalendarTime,300,1,rsvp,2.3264538894096755e-05
+21,bv_loop,realized_bipower_variation,CalendarTime,300,1,bv_skip0,5.4120391561867318e-05
+22,bv_loop,realized_bipower_variation,CalendarTime,300,1,bv_skip1,4.9488794009935198e-05
+23,qt_loop,realized_quarticity,CalendarTime,300,1,qt_tripower,1.1412988878263652e-09
+24,qt_loop,realized_quarticity,CalendarTime,300,1,qt_quadpower,7.9163611121303505e-10
+25,rc_loop,realized_covariance,CalendarTime,300,1,rc_diag,6.4493300322992570e-05
+26,rv_loop,realized_variance,CalendarUniform,78,1,rv,7.0997505401645608e-05
+27,rv_loop,realized_variance,CalendarUniform,78,5,rv_ss5,7.0997505401645608e-05
+28,sv_loop,realized_semivariance,CalendarUniform,78,1,rsvn,4.0068272249770657e-05
+29,sv_loop,realized_semivariance,CalendarUniform,78,1,rsvp,3.0929233151874951e-05
+30,bv_loop,realized_bipower_variation,CalendarUniform,78,1,bv_skip0,6.6548807545049345e-05
+31,bv_loop,realized_bipower_variation,CalendarUniform,78,1,bv_skip1,7.8379876727143984e-05
+32,qt_loop,realized_quarticity,CalendarUniform,78,1,qt_tripower,1.6316086351416304e-09
+33,qt_loop,realized_quarticity,CalendarUniform,78,1,qt_quadpower,1.0843104594632484e-09
+34,rc_loop,realized_covariance,CalendarUniform,78,1,rc_diag,7.0997505401645608e-05
+35,rv_loop,realized_variance,CalendarUniform,390,1,rv,8.3105913086659787e-05
+36,rv_loop,realized_variance,CalendarUniform,390,5,rv_ss5,8.3105913086659787e-05
+37,sv_loop,realized_semivariance,CalendarUniform,390,1,rsvn,4.5357921191815367e-05
+38,sv_loop,realized_semivariance,CalendarUniform,390,1,rsvp,3.7747991894844420e-05
+39,bv_loop,realized_bipower_variation,CalendarUniform,390,1,bv_skip0,7.7883164458215464e-05
+40,bv_loop,realized_bipower_variation,CalendarUniform,390,1,bv_skip1,8.2274522184524237e-05
+41,qt_loop,realized_quarticity,CalendarUniform,390,1,qt_tripower,2.6182027718037360e-09
+42,qt_loop,realized_quarticity,CalendarUniform,390,1,qt_quadpower,2.0330743656652664e-09
+43,rc_loop,realized_covariance,CalendarUniform,390,1,rc_diag,8.3105913086659787e-05
+44,rv_loop,realized_variance,BusinessTime,50,1,rv,6.4168839413930332e-05
+45,rv_loop,realized_variance,BusinessTime,50,5,rv_ss5,6.4168839413930332e-05
+46,sv_loop,realized_semivariance,BusinessTime,50,1,rsvn,4.1222132837527449e-05
+47,sv_loop,realized_semivariance,BusinessTime,50,1,rsvp,2.2946706576402896e-05
+48,bv_loop,realized_bipower_variation,BusinessTime,50,1,bv_skip0,6.3028581941758867e-05
+49,bv_loop,realized_bipower_variation,BusinessTime,50,1,bv_skip1,6.1693509162138985e-05
+50,qt_loop,realized_quarticity,BusinessTime,50,1,qt_tripower,1.4379274644730413e-09
+51,qt_loop,realized_quarticity,BusinessTime,50,1,qt_quadpower,1.1116237455793409e-09
+52,rv_loop,realized_variance,BusinessTime,300,1,rv,8.3876162510462831e-05
+53,rv_loop,realized_variance,BusinessTime,300,5,rv_ss5,8.3876162510462831e-05
+54,sv_loop,realized_semivariance,BusinessTime,300,1,rsvn,4.5192750709547596e-05
+55,sv_loop,realized_semivariance,BusinessTime,300,1,rsvp,3.8683411800915229e-05
+56,bv_loop,realized_bipower_variation,BusinessTime,300,1,bv_skip0,7.8474099731897702e-05
+57,bv_loop,realized_bipower_variation,BusinessTime,300,1,bv_skip1,7.7385936993112391e-05
+58,qt_loop,realized_quarticity,BusinessTime,300,1,qt_tripower,1.9741515178506969e-09
+59,qt_loop,realized_quarticity,BusinessTime,300,1,qt_quadpower,1.4302628285386309e-09
+60,rv_loop,realized_variance,BusinessUniform,68,1,rv,7.2059945954005064e-05
+61,rv_loop,realized_variance,BusinessUniform,68,5,rv_ss5,7.2059945954005064e-05
+62,sv_loop,realized_semivariance,BusinessUniform,68,1,rsvn,4.3209418156515293e-05
+63,sv_loop,realized_semivariance,BusinessUniform,68,1,rsvp,2.8850527797489778e-05
+64,bv_loop,realized_bipower_variation,BusinessUniform,68,1,bv_skip0,7.6120888761769458e-05
+65,bv_loop,realized_bipower_variation,BusinessUniform,68,1,bv_skip1,7.6212271852120928e-05
+66,qt_loop,realized_quarticity,BusinessUniform,68,1,qt_tripower,2.0900649866844238e-09
+67,qt_loop,realized_quarticity,BusinessUniform,68,1,qt_quadpower,1.7708922839836409e-09
+68,rv_loop,realized_variance,BusinessUniform,390,1,rv,8.3105913086659787e-05
+69,rv_loop,realized_variance,BusinessUniform,390,5,rv_ss5,8.3105913086659787e-05
+70,sv_loop,realized_semivariance,BusinessUniform,390,1,rsvn,4.5357921191815367e-05
+71,sv_loop,realized_semivariance,BusinessUniform,390,1,rsvp,3.7747991894844420e-05
+72,bv_loop,realized_bipower_variation,BusinessUniform,390,1,bv_skip0,7.7883164458215464e-05
+73,bv_loop,realized_bipower_variation,BusinessUniform,390,1,bv_skip1,8.2274522184524237e-05
+74,qt_loop,realized_quarticity,BusinessUniform,390,1,qt_tripower,2.6182027718037360e-09
+75,qt_loop,realized_quarticity,BusinessUniform,390,1,qt_quadpower,2.0330743656652664e-09
+76,rv_loop,realized_variance,Fixed,300,1,rv,6.4493300322992570e-05
+77,rv_loop,realized_variance,Fixed,300,5,rv_ss5,6.4493300322992570e-05
+78,sv_loop,realized_semivariance,Fixed,300,1,rsvn,4.1228761428895838e-05
+79,sv_loop,realized_semivariance,Fixed,300,1,rsvp,2.3264538894096755e-05
+80,bv_loop,realized_bipower_variation,Fixed,300,1,bv_skip0,5.4120391561867318e-05
+81,bv_loop,realized_bipower_variation,Fixed,300,1,bv_skip1,4.9488794009935198e-05
+82,qt_loop,realized_quarticity,Fixed,300,1,qt_tripower,1.1412988878263652e-09
+83,qt_loop,realized_quarticity,Fixed,300,1,qt_quadpower,7.9163611121303505e-10
+84,rc_loop,realized_covariance,Fixed,300,1,rc_diag,6.4493300322992570e-05
+85,quantile_variance,realized_quantile_variance,BusinessTime,300,1,rv_synth_proxy,9.3930745729333187e-01
+86,quantile_variance,realized_quantile_variance,BusinessTime,300,1,bv_synth_proxy,9.7639616075039826e-01
+87,range,realized_range,CalendarTime,300,1,rv_at_range_freq,6.4493300322992570e-05
+88,signature_plot,realized_variance,CalendarTime,10,1,rv_signature,1.5413889780065246e-04
+89,signature_plot,realized_variance,CalendarTime,30,1,rv_signature,1.0171908987223764e-04
+90,signature_plot,realized_variance,CalendarTime,60,1,rv_signature,9.1605640888479020e-05
+91,signature_plot,realized_variance,CalendarTime,120,1,rv_signature,8.3652985269095536e-05
+92,signature_plot,realized_variance,CalendarTime,300,1,rv_signature,6.4493300322992570e-05
+93,signature_plot,realized_variance,CalendarTime,600,1,rv_signature,5.7739135837703462e-05
+94,signature_plot,realized_variance,CalendarTime,1200,1,rv_signature,5.6417658756140212e-05
+95,signature_plot,realized_variance,CalendarTime,1800,1,rv_signature,2.3496819025324791e-05
+96,signature_plot,realized_variance,CalendarTime,3600,1,rv_signature,1.9797121475468580e-05
