@@ -1,0 +1,131 @@
+# realized_variance_optimal_sampling fixture data — Octave/MATLAB reference for parity testing
+# Generated from ES_20090817.mat high-frequency E-mini S&P 500 futures trade data (Aug 17 2009)
+# Source: realized/realized_variance_optimal_sampling.m — Bandi-Russell optimal sampling frequency selection
+# Human-readable CSV counterpart of realized_variance_optimal_sampling.npy
+# Validation: numpy.testing.assert_allclose(actual, expected, atol=1e-6, rtol=1e-4)
+#
+# Data Source: ES_20090817.mat
+#   N_trades = 72059
+#   price range: [976.500000, 985.000000]
+#   time range: [83000.026000 (8:30 AM), 145959.981000 (2:59 PM)] wall clock (HHMMSS)
+#
+# Function signature:
+#   [rv, rvDebiased, rvSS, rvDebiasedSS, diagnostics] = realized_variance_optimal_sampling(
+#       price, time, timeType, samplingType, samplingInterval, subsamples, options)
+#
+# Output descriptions:
+#   rv:            Realized variance at Bandi-Russell optimal sampling frequency
+#   rvDebiased:    Debiased realized variance at optimal frequency (noise-adjusted)
+#   rvSS:          Subsampled RV using optimal frequency
+#   rvDebiasedSS:  Subsampled debiased RV using optimal frequency
+#   diagnostics.m: Number of filtered returns (filtered price count - 1)
+#   diagnostics.optimalSamples:                 Optimal number of samples (Bandi-Russell)
+#   diagnostics.samples:                        Actual samples used (clamped to [2, m])
+#   diagnostics.optimalNumberOfSamplesDebiased: Optimal debiased sample count
+#   diagnostics.samplesDebiased:                Actual debiased samples used
+#   diagnostics.noiseVariance:                  Estimated microstructure noise variance
+#   diagnostics.debiasedNoiseVariance:          Debiased noise variance estimate
+#   diagnostics.IQEstimate:                     Estimated integrated quarticity
+#
+# Test scenarios:
+#   1. default_calendartime_300s:  CalendarTime 300s, wall, subsamples=1 — standard 5-min sampling
+#   2. calendartime_300s_5sub:     CalendarTime 300s, wall, subsamples=5 — subsampled variant
+#   3. businesstime_1tick:         BusinessTime 1 tick, wall, subsamples=1 — tick-by-tick (all data)
+#   4. businesstime_10ticks:       BusinessTime 10 ticks, wall, subsamples=1 — moderate tick sampling
+#   5. businesstime_1tick_5sub:    BusinessTime 1 tick, wall, subsamples=5 — tick-by-tick subsampled
+#   6. calendartime_60s_seconds:   CalendarTime 60s, seconds timeType, subsamples=1 — 1-min seconds
+#   7. businesstime_10ticks_5sub:  BusinessTime 10 ticks, wall, subsamples=5 — moderate tick subsampled
+#
+# Notes:
+#   - 'unit' timeType is documented in realized_variance_optimal_sampling.m but not supported
+#     by downstream realized_noise_estimate.m (only accepts 'wall', 'seconds', 'matlab').
+#     The 'seconds' timeType scenario (scenario 6) provides equivalent coverage.
+#   - Negative rvDebiased values can occur when noise dominates signal at high frequencies.
+#   - rv and rvSS are identical when subsamples=1 (no subsampling offset averaging).
+#   - diagnostics values are identical across subsample counts for same price/time/sampling config.
+#
+scenario,timeType,samplingType,samplingInterval,subsamples,output_name,value
+default_calendartime_300s,wall,CalendarTime,300,1,rv,3.6306113302801041e-05
+default_calendartime_300s,wall,CalendarTime,300,1,rvDebiased,6.4542374347186651e-05
+default_calendartime_300s,wall,CalendarTime,300,1,rvSS,3.6306113302801041e-05
+default_calendartime_300s,wall,CalendarTime,300,1,rvDebiasedSS,6.4542374347186651e-05
+default_calendartime_300s,wall,CalendarTime,300,1,diagnostics.m,78
+default_calendartime_300s,wall,CalendarTime,300,1,diagnostics.optimalSamples,18
+default_calendartime_300s,wall,CalendarTime,300,1,diagnostics.samples,18
+default_calendartime_300s,wall,CalendarTime,300,1,diagnostics.optimalNumberOfSamplesDebiased,31
+default_calendartime_300s,wall,CalendarTime,300,1,diagnostics.samplesDebiased,31
+default_calendartime_300s,wall,CalendarTime,300,1,diagnostics.noiseVariance,8.3437489056422218e-07
+default_calendartime_300s,wall,CalendarTime,300,1,diagnostics.debiasedNoiseVariance,3.1359390892700184e-07
+default_calendartime_300s,wall,CalendarTime,300,1,diagnostics.IQEstimate,4.3048724840038632e-09
+calendartime_300s_5sub,wall,CalendarTime,300,5,rv,3.6306113302801041e-05
+calendartime_300s_5sub,wall,CalendarTime,300,5,rvDebiased,6.4542374347186651e-05
+calendartime_300s_5sub,wall,CalendarTime,300,5,rvSS,1.5380694966009062e-05
+calendartime_300s_5sub,wall,CalendarTime,300,5,rvDebiasedSS,6.3881048189662378e-05
+calendartime_300s_5sub,wall,CalendarTime,300,5,diagnostics.m,78
+calendartime_300s_5sub,wall,CalendarTime,300,5,diagnostics.optimalSamples,18
+calendartime_300s_5sub,wall,CalendarTime,300,5,diagnostics.samples,18
+calendartime_300s_5sub,wall,CalendarTime,300,5,diagnostics.optimalNumberOfSamplesDebiased,31
+calendartime_300s_5sub,wall,CalendarTime,300,5,diagnostics.samplesDebiased,31
+calendartime_300s_5sub,wall,CalendarTime,300,5,diagnostics.noiseVariance,8.3437489056422218e-07
+calendartime_300s_5sub,wall,CalendarTime,300,5,diagnostics.debiasedNoiseVariance,3.1359390892700184e-07
+calendartime_300s_5sub,wall,CalendarTime,300,5,diagnostics.IQEstimate,4.3048724840038632e-09
+businesstime_1tick,wall,BusinessTime,1,1,rv,8.9336793799869315e-05
+businesstime_1tick,wall,BusinessTime,1,1,rvDebiased,1.1310172340427511e-05
+businesstime_1tick,wall,BusinessTime,1,1,rvSS,8.9336793799869315e-05
+businesstime_1tick,wall,BusinessTime,1,1,rvDebiasedSS,1.1310172340427511e-05
+businesstime_1tick,wall,BusinessTime,1,1,diagnostics.m,72058
+businesstime_1tick,wall,BusinessTime,1,1,diagnostics.optimalSamples,214
+businesstime_1tick,wall,BusinessTime,1,1,diagnostics.samples,214
+businesstime_1tick,wall,BusinessTime,1,1,diagnostics.optimalNumberOfSamplesDebiased,2283
+businesstime_1tick,wall,BusinessTime,1,1,diagnostics.samplesDebiased,2283
+businesstime_1tick,wall,BusinessTime,1,1,diagnostics.noiseVariance,1.8795560244878387e-08
+businesstime_1tick,wall,BusinessTime,1,1,diagnostics.debiasedNoiseVariance,8.3432495604946522e-09
+businesstime_1tick,wall,BusinessTime,1,1,diagnostics.IQEstimate,3.4505477975976301e-09
+businesstime_10ticks,wall,BusinessTime,10,1,rv,6.8984101242178041e-05
+businesstime_10ticks,wall,BusinessTime,10,1,rvDebiased,-1.8859058035424265e-05
+businesstime_10ticks,wall,BusinessTime,10,1,rvSS,6.8984101242178041e-05
+businesstime_10ticks,wall,BusinessTime,10,1,rvDebiasedSS,-1.8859058035424265e-05
+businesstime_10ticks,wall,BusinessTime,10,1,diagnostics.m,7206
+businesstime_10ticks,wall,BusinessTime,10,1,diagnostics.optimalSamples,161
+businesstime_10ticks,wall,BusinessTime,10,1,diagnostics.samples,161
+businesstime_10ticks,wall,BusinessTime,10,1,diagnostics.optimalNumberOfSamplesDebiased,1650
+businesstime_10ticks,wall,BusinessTime,10,1,diagnostics.samplesDebiased,1650
+businesstime_10ticks,wall,BusinessTime,10,1,diagnostics.noiseVariance,3.2029585129733816e-08
+businesstime_10ticks,wall,BusinessTime,10,1,diagnostics.debiasedNoiseVariance,1.5027452754543029e-08
+businesstime_10ticks,wall,BusinessTime,10,1,diagnostics.IQEstimate,4.2951956973244753e-09
+businesstime_1tick_5sub,wall,BusinessTime,1,5,rv,8.9336793799869315e-05
+businesstime_1tick_5sub,wall,BusinessTime,1,5,rvDebiased,1.1310172340427511e-05
+businesstime_1tick_5sub,wall,BusinessTime,1,5,rvSS,8.7585553319990638e-05
+businesstime_1tick_5sub,wall,BusinessTime,1,5,rvDebiasedSS,1.6464932347521169e-05
+businesstime_1tick_5sub,wall,BusinessTime,1,5,diagnostics.m,72058
+businesstime_1tick_5sub,wall,BusinessTime,1,5,diagnostics.optimalSamples,214
+businesstime_1tick_5sub,wall,BusinessTime,1,5,diagnostics.samples,214
+businesstime_1tick_5sub,wall,BusinessTime,1,5,diagnostics.optimalNumberOfSamplesDebiased,2283
+businesstime_1tick_5sub,wall,BusinessTime,1,5,diagnostics.samplesDebiased,2283
+businesstime_1tick_5sub,wall,BusinessTime,1,5,diagnostics.noiseVariance,1.8795560244878387e-08
+businesstime_1tick_5sub,wall,BusinessTime,1,5,diagnostics.debiasedNoiseVariance,8.3432495604946522e-09
+businesstime_1tick_5sub,wall,BusinessTime,1,5,diagnostics.IQEstimate,3.4505477975976301e-09
+calendartime_60s_seconds,seconds,CalendarTime,60,1,rv,3.4306462641615874e-05
+calendartime_60s_seconds,seconds,CalendarTime,60,1,rvDebiased,8.7931174822909684e-05
+calendartime_60s_seconds,seconds,CalendarTime,60,1,rvSS,3.4306462641615874e-05
+calendartime_60s_seconds,seconds,CalendarTime,60,1,rvDebiasedSS,8.7931174822909684e-05
+calendartime_60s_seconds,seconds,CalendarTime,60,1,diagnostics.m,390
+calendartime_60s_seconds,seconds,CalendarTime,60,1,diagnostics.optimalSamples,38
+calendartime_60s_seconds,seconds,CalendarTime,60,1,diagnostics.samples,38
+calendartime_60s_seconds,seconds,CalendarTime,60,1,diagnostics.optimalNumberOfSamplesDebiased,117
+calendartime_60s_seconds,seconds,CalendarTime,60,1,diagnostics.samplesDebiased,117
+calendartime_60s_seconds,seconds,CalendarTime,60,1,diagnostics.noiseVariance,2.3555644832979371e-07
+calendartime_60s_seconds,seconds,CalendarTime,60,1,diagnostics.debiasedNoiseVariance,1.2934503227942154e-07
+calendartime_60s_seconds,seconds,CalendarTime,60,1,diagnostics.IQEstimate,2.9984257970913135e-09
+businesstime_10ticks_5sub,wall,BusinessTime,10,5,rv,6.8984101242178041e-05
+businesstime_10ticks_5sub,wall,BusinessTime,10,5,rvDebiased,-1.8859058035424265e-05
+businesstime_10ticks_5sub,wall,BusinessTime,10,5,rvSS,6.6810211137204012e-05
+businesstime_10ticks_5sub,wall,BusinessTime,10,5,rvDebiasedSS,-3.3137671506382879e-05
+businesstime_10ticks_5sub,wall,BusinessTime,10,5,diagnostics.m,7206
+businesstime_10ticks_5sub,wall,BusinessTime,10,5,diagnostics.optimalSamples,161
+businesstime_10ticks_5sub,wall,BusinessTime,10,5,diagnostics.samples,161
+businesstime_10ticks_5sub,wall,BusinessTime,10,5,diagnostics.optimalNumberOfSamplesDebiased,1650
+businesstime_10ticks_5sub,wall,BusinessTime,10,5,diagnostics.samplesDebiased,1650
+businesstime_10ticks_5sub,wall,BusinessTime,10,5,diagnostics.noiseVariance,3.2029585129733816e-08
+businesstime_10ticks_5sub,wall,BusinessTime,10,5,diagnostics.debiasedNoiseVariance,1.5027452754543029e-08
+businesstime_10ticks_5sub,wall,BusinessTime,10,5,diagnostics.IQEstimate,4.2951956973244753e-09
