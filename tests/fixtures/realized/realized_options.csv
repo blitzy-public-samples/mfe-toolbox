@@ -1,0 +1,133 @@
+# realized_options fixture data — MATLAB reference for parity testing
+# Source: realized/realized_options.m — Default options factory for realized volatility estimators
+# Human-readable CSV counterpart of realized_options.npy
+# Validation: numpy.testing.assert_allclose(actual, expected, atol=1e-6, rtol=1e-4) for numeric values;
+#             exact string matching for string values
+#
+# Function signature (MATLAB):
+#   options = realized_options(realizedFunction)
+#
+# The function returns a struct of default option values for the specified realized
+# volatility estimator.  Only fields relevant to the selected estimator are included.
+# All values below are deterministic defaults — no RNG state involved.
+#
+# realizedFunction must be one of (case-insensitive):
+#   'kernel'               — Realized kernel estimation (realized_kernel)
+#   'multivariate kernel'  — Multivariate realized kernel (realized_multivariate_kernel)
+#   'optimal sampling'     — Bandi-Russell optimal sampling (realized_variance_optimal_sampling)
+#   'twoscale'             — Two-scale realized variance
+#   'multiscale'           — Multiscale realized variance
+#   'qmle'                 — QMLE estimation of QV
+#   'preaveraging'         — Pre-averaged realized variance and related estimators
+#
+# Default base values (before per-estimator filtering/overrides):
+#   kernel='nonflatparzen', endTreatment='jitter', maxBandwidthPerc=0.25,
+#   maxBandwidth=[] (NaN), jitterLags=2, bandwidth=[] (NaN),
+#   useDebiasedNoise=false, useAdjustedNoiseCount=true,
+#   medFrequencySamplingType='BusinessUniform', medFrequencySamplingInterval=390,
+#   medFrequencyKernel='parzen', medFrequencyBandwidth=5,
+#   noiseVarianceSamplingType='BusinessUniform', noiseVarianceSamplingInterval=120,
+#   IQEstimationSamplingType='BusinessUniform', IQEstimationSamplingInterval=39,
+#   theta=1
+#
+# Per-estimator overrides:
+#   'optimal sampling'/'twoscale'/'multiscale':
+#     noiseVarianceSamplingType → 'BusinessTime'
+#     noiseVarianceSamplingInterval → 1
+#     useAdjustedNoiseCount → false
+#   'qmle':
+#     noiseVarianceSamplingType → 'BusinessTime'
+#     noiseVarianceSamplingInterval → 1
+#   'preaveraging':
+#     noiseVarianceSamplingType → 'BusinessTime'
+#     noiseVarianceSamplingInterval → 1
+#
+# Test scenarios:
+#   1. default_kernel:       realized_options('kernel')            — default/empty call, all kernel fields
+#   2. multivariate_kernel:  realized_options('multivariate kernel') — same defaults as kernel
+#   3. optimal_sampling:     realized_options('optimal sampling')  — overrides noise params, removes kernel-specific fields
+#   4. twoscale:             realized_options('twoscale')          — same overrides as optimal_sampling
+#   5. multiscale:           realized_options('multiscale')        — same overrides as optimal_sampling
+#   6. qmle:                 realized_options('qmle')              — minimal field set, noise overrides
+#   7. preaveraging:         realized_options('preaveraging')      — includes theta, noise overrides
+#
+scenario,realized_function,option_name,value,value_type
+default_kernel,kernel,kernel,nonflatparzen,string
+default_kernel,kernel,endTreatment,jitter,string
+default_kernel,kernel,maxBandwidthPerc,0.25,numeric
+default_kernel,kernel,maxBandwidth,NaN,empty
+default_kernel,kernel,jitterLags,2,numeric
+default_kernel,kernel,bandwidth,NaN,empty
+default_kernel,kernel,useDebiasedNoise,False,logical
+default_kernel,kernel,useAdjustedNoiseCount,True,logical
+default_kernel,kernel,medFrequencySamplingType,BusinessUniform,string
+default_kernel,kernel,medFrequencySamplingInterval,390,numeric
+default_kernel,kernel,medFrequencyKernel,parzen,string
+default_kernel,kernel,medFrequencyBandwidth,5,numeric
+default_kernel,kernel,noiseVarianceSamplingType,BusinessUniform,string
+default_kernel,kernel,noiseVarianceSamplingInterval,120,numeric
+default_kernel,kernel,IQEstimationSamplingType,BusinessUniform,string
+default_kernel,kernel,IQEstimationSamplingInterval,39,numeric
+multivariate_kernel,multivariate kernel,kernel,nonflatparzen,string
+multivariate_kernel,multivariate kernel,endTreatment,jitter,string
+multivariate_kernel,multivariate kernel,maxBandwidthPerc,0.25,numeric
+multivariate_kernel,multivariate kernel,maxBandwidth,NaN,empty
+multivariate_kernel,multivariate kernel,jitterLags,2,numeric
+multivariate_kernel,multivariate kernel,bandwidth,NaN,empty
+multivariate_kernel,multivariate kernel,useDebiasedNoise,False,logical
+multivariate_kernel,multivariate kernel,useAdjustedNoiseCount,True,logical
+multivariate_kernel,multivariate kernel,medFrequencySamplingType,BusinessUniform,string
+multivariate_kernel,multivariate kernel,medFrequencySamplingInterval,390,numeric
+multivariate_kernel,multivariate kernel,medFrequencyKernel,parzen,string
+multivariate_kernel,multivariate kernel,medFrequencyBandwidth,5,numeric
+multivariate_kernel,multivariate kernel,noiseVarianceSamplingType,BusinessUniform,string
+multivariate_kernel,multivariate kernel,noiseVarianceSamplingInterval,120,numeric
+multivariate_kernel,multivariate kernel,IQEstimationSamplingType,BusinessUniform,string
+multivariate_kernel,multivariate kernel,IQEstimationSamplingInterval,39,numeric
+optimal_sampling,optimal sampling,bandwidth,NaN,empty
+optimal_sampling,optimal sampling,useDebiasedNoise,False,logical
+optimal_sampling,optimal sampling,useAdjustedNoiseCount,False,logical
+optimal_sampling,optimal sampling,medFrequencySamplingType,BusinessUniform,string
+optimal_sampling,optimal sampling,medFrequencySamplingInterval,390,numeric
+optimal_sampling,optimal sampling,medFrequencyKernel,parzen,string
+optimal_sampling,optimal sampling,medFrequencyBandwidth,5,numeric
+optimal_sampling,optimal sampling,noiseVarianceSamplingType,BusinessTime,string
+optimal_sampling,optimal sampling,noiseVarianceSamplingInterval,1,numeric
+optimal_sampling,optimal sampling,IQEstimationSamplingType,BusinessUniform,string
+optimal_sampling,optimal sampling,IQEstimationSamplingInterval,39,numeric
+twoscale,twoscale,bandwidth,NaN,empty
+twoscale,twoscale,useDebiasedNoise,False,logical
+twoscale,twoscale,useAdjustedNoiseCount,False,logical
+twoscale,twoscale,medFrequencySamplingType,BusinessUniform,string
+twoscale,twoscale,medFrequencySamplingInterval,390,numeric
+twoscale,twoscale,medFrequencyKernel,parzen,string
+twoscale,twoscale,medFrequencyBandwidth,5,numeric
+twoscale,twoscale,noiseVarianceSamplingType,BusinessTime,string
+twoscale,twoscale,noiseVarianceSamplingInterval,1,numeric
+twoscale,twoscale,IQEstimationSamplingType,BusinessUniform,string
+twoscale,twoscale,IQEstimationSamplingInterval,39,numeric
+multiscale,multiscale,bandwidth,NaN,empty
+multiscale,multiscale,useDebiasedNoise,False,logical
+multiscale,multiscale,useAdjustedNoiseCount,False,logical
+multiscale,multiscale,medFrequencySamplingType,BusinessUniform,string
+multiscale,multiscale,medFrequencySamplingInterval,390,numeric
+multiscale,multiscale,medFrequencyKernel,parzen,string
+multiscale,multiscale,medFrequencyBandwidth,5,numeric
+multiscale,multiscale,noiseVarianceSamplingType,BusinessTime,string
+multiscale,multiscale,noiseVarianceSamplingInterval,1,numeric
+multiscale,multiscale,IQEstimationSamplingType,BusinessUniform,string
+multiscale,multiscale,IQEstimationSamplingInterval,39,numeric
+qmle,qmle,medFrequencySamplingType,BusinessUniform,string
+qmle,qmle,medFrequencySamplingInterval,390,numeric
+qmle,qmle,noiseVarianceSamplingType,BusinessTime,string
+qmle,qmle,noiseVarianceSamplingInterval,1,numeric
+preaveraging,preaveraging,theta,1,numeric
+preaveraging,preaveraging,medFrequencySamplingType,BusinessUniform,string
+preaveraging,preaveraging,medFrequencySamplingInterval,390,numeric
+preaveraging,preaveraging,medFrequencyKernel,parzen,string
+preaveraging,preaveraging,medFrequencyBandwidth,5,numeric
+preaveraging,preaveraging,noiseVarianceSamplingType,BusinessTime,string
+preaveraging,preaveraging,noiseVarianceSamplingInterval,1,numeric
+preaveraging,preaveraging,IQEstimationSamplingType,BusinessUniform,string
+preaveraging,preaveraging,IQEstimationSamplingInterval,39,numeric
+preaveraging,preaveraging,useAdjustedNoiseCount,True,logical
