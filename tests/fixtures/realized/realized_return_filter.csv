@@ -1,0 +1,177 @@
+# realized_return_filter fixture data — Octave/MATLAB reference for parity testing
+# Generated from simulated high-frequency price data (rng(42,'twister'), T_hf=2000)
+# Source: realized/realized_return_filter.m — Return filtering via price filter + log differencing
+# Human-readable CSV counterpart of realized_return_filter.npy
+# Validation: numpy.testing.assert_allclose(actual, expected, atol=1e-6, rtol=1e-4)
+#
+# Data Source: generate_fixtures.m synthetic data
+#   T_hf = 2000 observations
+#   hf_returns = 0.0001 * randn(T_hf, 1), rng(42,'twister')
+#   hf_prices = 100 * exp(cumsum(hf_returns))
+#   hf_times_seconds = linspace(34200, 57600, T_hf)'  (9:30 to 16:00 in seconds)
+#   hf_times_wall = seconds2wall(hf_times_seconds) (HHMMSS wall clock format)
+#   hf_times_unit = (hf_times_seconds - 34200) / (57600 - 34200) (unit-normalized [0, 1])
+#   RNG state: rng(42,'twister') then epsilon(1000), data_mv(1000x3), then hf_returns(2000)
+#
+# Function signature:
+#   [returns, interval] = realized_return_filter(price, time, timeType, samplingType,
+#       samplingInterval, subsamples)
+#
+# Output descriptions:
+#   returns:   Cell array of (subsamples+1) filtered log-return vectors. Each cell contains
+#              diff(filteredLogPrice) where filteredLogPrice = log(filteredPrice) from
+#              realized_price_filter. Ref: realized_return_filter.m:134
+#   interval:  (subsamples+1) x 1 vector of time-interval scaling factors. interval(1) = 1.0
+#              always (base sample). For subsamples > 0, interval(i+1) represents the
+#              fraction of the total time span covered by the i-th subsample grid.
+#              Ref: realized_return_filter.m:135, 167, 194
+#
+# Filtering note:
+#   realized_return_filter is a wrapper around realized_price_filter that:
+#   1. Converts prices to log-prices: logPrice = log(price)
+#   2. Filters log-prices using realized_price_filter(logPrice, time, ...)
+#   3. Computes log-returns: returns = diff(filteredLogPrice)
+#   Subsampling produces multiple offset return grids for bias correction.
+#   Ref: realized_return_filter.m:132-134
+#
+# Subsampling note:
+#   When subsamples > 0, the function produces (subsamples+1) return vectors by shifting
+#   the sampling grid. For CalendarTime/CalendarUniform/Fixed, the shift is in time;
+#   for BusinessTime/BusinessUniform, the shift is in tick space. The interval vector
+#   records what fraction of the total time span each subsample covers, enabling
+#   bias correction in downstream estimators (e.g., realized_variance).
+#   Ref: realized_return_filter.m:138-196
+#
+# CSV format note:
+#   Since returns are vectors (not scalars), this CSV stores summary statistics for
+#   each scenario's return vector: n_returns (length), returns_sum, returns_sumsq
+#   (sum of squared returns = realized variance), returns_mean, returns_min, returns_max,
+#   returns_first (first element), returns_last (last element), and interval (scaling factor).
+#   Full return vectors are available in the companion .npy files.
+#
+# Test scenarios:
+#   1. calendartime_300s:            CalendarTime 300s, seconds, subsamples=0 — standard 5-min returns
+#   2. businesstime_10ticks:         BusinessTime 10 ticks, seconds, subsamples=0 — tick-based returns
+#   3. calendaruniform_100obs:       CalendarUniform 100 obs, seconds, subsamples=0 — uniform sampling
+#   4. wall_calendartime_300:        CalendarTime 300, wall, subsamples=0 — wall clock time
+#   5. unit_calendaruniform_100obs:  CalendarUniform 100 obs, unit, subsamples=0 — unit-normalized time
+#   6. unit_fixed_20pts:             Fixed 20 points, unit, subsamples=0 — fixed-grid sampling
+#   7. businesstime_25ticks_3sub:    BusinessTime 25 ticks, seconds, subsamples=3 — subsampled tick returns
+#   8. calendartime_300s_3sub:       CalendarTime 300s, seconds, subsamples=3 — subsampled calendar returns
+#
+# Notes:
+#   - Scenarios 1 and 4 produce identical returns because wall-clock times are converted to
+#     seconds internally before filtering; the same 300-second grid is used.
+#   - Scenarios 3 and 5 produce identical returns because CalendarUniform with 100 observations
+#     spaces points uniformly in time, regardless of whether time is in seconds or unit.
+#   - Scenario 6 uses Fixed sampling at 20 evenly-spaced points in [0.05, 0.95] unit time.
+#   - Scenarios 7 and 8 demonstrate subsampling: subsample_0 is the base grid, subsample_1..3
+#     are offset grids with interval < 1.0 reflecting their shorter time coverage.
+#   - returns_sumsq equals the realized variance computed from the filtered returns.
+#   - returns_sum is constant across non-subsampled scenarios that start and end at the same
+#     price points (log(price_last) - log(price_first)).
+#   - All values computed with Octave 8.4.0 using MFE Toolbox Version 4.0.
+#
+scenario,timeType,samplingType,samplingInterval,subsamples,subsample_index,output_name,value
+calendartime_300s,seconds,CalendarTime,300,0,0,n_returns,78
+calendartime_300s,seconds,CalendarTime,300,0,0,interval,1.00000000000000000000e+00
+calendartime_300s,seconds,CalendarTime,300,0,0,returns_sum,7.06905451448047728036e-03
+calendartime_300s,seconds,CalendarTime,300,0,0,returns_sumsq,2.46699170377480289608e-05
+calendartime_300s,seconds,CalendarTime,300,0,0,returns_mean,9.06289040318009845188e-05
+calendartime_300s,seconds,CalendarTime,300,0,0,returns_min,-1.25343533358091008267e-03
+calendartime_300s,seconds,CalendarTime,300,0,0,returns_max,1.74076004369094761159e-03
+calendartime_300s,seconds,CalendarTime,300,0,0,returns_first,3.26331171677907150297e-04
+calendartime_300s,seconds,CalendarTime,300,0,0,returns_last,2.22670014506931579490e-04
+businesstime_10ticks,seconds,BusinessTime,10,0,0,n_returns,200
+businesstime_10ticks,seconds,BusinessTime,10,0,0,interval,1.00000000000000000000e+00
+businesstime_10ticks,seconds,BusinessTime,10,0,0,returns_sum,7.06905451448047728036e-03
+businesstime_10ticks,seconds,BusinessTime,10,0,0,returns_sumsq,1.83248635872027380042e-05
+businesstime_10ticks,seconds,BusinessTime,10,0,0,returns_mean,3.53452725724023874860e-05
+businesstime_10ticks,seconds,BusinessTime,10,0,0,returns_min,-8.11828204211550996661e-04
+businesstime_10ticks,seconds,BusinessTime,10,0,0,returns_max,1.06824645912251270374e-03
+businesstime_10ticks,seconds,BusinessTime,10,0,0,returns_first,8.47487474090691250694e-04
+businesstime_10ticks,seconds,BusinessTime,10,0,0,returns_last,9.32193243077250599526e-05
+calendaruniform_100obs,seconds,CalendarUniform,100,0,0,n_returns,99
+calendaruniform_100obs,seconds,CalendarUniform,100,0,0,interval,1.00000000000000000000e+00
+calendaruniform_100obs,seconds,CalendarUniform,100,0,0,returns_sum,7.06905451448047728036e-03
+calendaruniform_100obs,seconds,CalendarUniform,100,0,0,returns_sumsq,2.32791632500185975826e-05
+calendaruniform_100obs,seconds,CalendarUniform,100,0,0,returns_mean,7.14045910553583526711e-05
+calendaruniform_100obs,seconds,CalendarUniform,100,0,0,returns_min,-9.74228694786916094017e-04
+calendaruniform_100obs,seconds,CalendarUniform,100,0,0,returns_max,1.26671098842834339848e-03
+calendaruniform_100obs,seconds,CalendarUniform,100,0,0,returns_first,5.31132109042431466150e-04
+calendaruniform_100obs,seconds,CalendarUniform,100,0,0,returns_last,7.81056390497525399041e-06
+wall_calendartime_300,wall,CalendarTime,300,0,0,n_returns,78
+wall_calendartime_300,wall,CalendarTime,300,0,0,interval,1.00000000000000000000e+00
+wall_calendartime_300,wall,CalendarTime,300,0,0,returns_sum,7.06905451448047728036e-03
+wall_calendartime_300,wall,CalendarTime,300,0,0,returns_sumsq,2.46699170377480289608e-05
+wall_calendartime_300,wall,CalendarTime,300,0,0,returns_mean,9.06289040318009845188e-05
+wall_calendartime_300,wall,CalendarTime,300,0,0,returns_min,-1.25343533358091008267e-03
+wall_calendartime_300,wall,CalendarTime,300,0,0,returns_max,1.74076004369094761159e-03
+wall_calendartime_300,wall,CalendarTime,300,0,0,returns_first,3.26331171677907150297e-04
+wall_calendartime_300,wall,CalendarTime,300,0,0,returns_last,2.22670014506931579490e-04
+unit_calendaruniform_100obs,unit,CalendarUniform,100,0,0,n_returns,99
+unit_calendaruniform_100obs,unit,CalendarUniform,100,0,0,interval,1.00000000000000000000e+00
+unit_calendaruniform_100obs,unit,CalendarUniform,100,0,0,returns_sum,7.06905451448047728036e-03
+unit_calendaruniform_100obs,unit,CalendarUniform,100,0,0,returns_sumsq,2.32791632500185975826e-05
+unit_calendaruniform_100obs,unit,CalendarUniform,100,0,0,returns_mean,7.14045910553583526711e-05
+unit_calendaruniform_100obs,unit,CalendarUniform,100,0,0,returns_min,-9.74228694786916094017e-04
+unit_calendaruniform_100obs,unit,CalendarUniform,100,0,0,returns_max,1.26671098842834339848e-03
+unit_calendaruniform_100obs,unit,CalendarUniform,100,0,0,returns_first,5.31132109042431466150e-04
+unit_calendaruniform_100obs,unit,CalendarUniform,100,0,0,returns_last,7.81056390497525399041e-06
+unit_fixed_20pts,unit,Fixed,20,0,0,n_returns,19
+unit_fixed_20pts,unit,Fixed,20,0,0,interval,1.00000000000000000000e+00
+unit_fixed_20pts,unit,Fixed,20,0,0,returns_sum,7.21941816589488638556e-03
+unit_fixed_20pts,unit,Fixed,20,0,0,returns_sumsq,1.46890309075325006886e-05
+unit_fixed_20pts,unit,Fixed,20,0,0,returns_mean,3.79969377152362421373e-04
+unit_fixed_20pts,unit,Fixed,20,0,0,returns_min,-8.31722296360304369500e-04
+unit_fixed_20pts,unit,Fixed,20,0,0,returns_max,1.80354620281431010653e-03
+unit_fixed_20pts,unit,Fixed,20,0,0,returns_first,1.24439596338365987549e-03
+unit_fixed_20pts,unit,Fixed,20,0,0,returns_last,8.26381779569729246759e-04
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,0,n_returns,80
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,0,interval,1.00000000000000000000e+00
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,0,returns_sum,7.06905451448047728036e-03
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,0,returns_sumsq,2.49400030316321539854e-05
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,0,returns_first,3.26331171677907150297e-04
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,0,returns_last,3.48584540529550679366e-04
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,1,n_returns,80
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,1,interval,9.96998499249624692276e-01
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,1,returns_sum,6.41118870131673901369e-03
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,1,returns_sumsq,2.04726443457096413537e-05
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,1,returns_first,-1.25749399887631341244e-04
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,1,returns_last,-8.12331785535747030735e-05
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,2,n_returns,80
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,2,interval,9.93996998499249606596e-01
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,2,returns_sum,6.13240781303847626305e-03
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,2,returns_sumsq,2.24253246485742890621e-05
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,2,returns_first,-2.88827111833533933805e-04
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,2,returns_last,1.29575242110213650903e-04
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,3,n_returns,80
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,3,interval,9.90995497748874298871e-01
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,3,returns_sum,6.53089193821720925826e-03
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,3,returns_sumsq,2.26160357495542584951e-05
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,3,returns_first,6.54923953324448859803e-04
+businesstime_25ticks_3sub,seconds,BusinessTime,25,3,3,returns_last,-4.42706944037141170156e-05
+calendartime_300s_3sub,seconds,CalendarTime,300,3,0,n_returns,78
+calendartime_300s_3sub,seconds,CalendarTime,300,3,0,interval,1.00000000000000000000e+00
+calendartime_300s_3sub,seconds,CalendarTime,300,3,0,returns_sum,7.06905451448047728036e-03
+calendartime_300s_3sub,seconds,CalendarTime,300,3,0,returns_sumsq,2.46699170377480289608e-05
+calendartime_300s_3sub,seconds,CalendarTime,300,3,0,returns_first,3.26331171677907150297e-04
+calendartime_300s_3sub,seconds,CalendarTime,300,3,0,returns_last,2.22670014506931579490e-04
+calendartime_300s_3sub,seconds,CalendarTime,300,3,1,n_returns,78
+calendartime_300s_3sub,seconds,CalendarTime,300,3,1,interval,9.87179487179487225035e-01
+calendartime_300s_3sub,seconds,CalendarTime,300,3,1,returns_sum,6.41118870131673901369e-03
+calendartime_300s_3sub,seconds,CalendarTime,300,3,1,returns_sumsq,2.37481883338793047281e-05
+calendartime_300s_3sub,seconds,CalendarTime,300,3,1,returns_first,-1.01082571371868823462e-04
+calendartime_300s_3sub,seconds,CalendarTime,300,3,1,returns_last,-1.03104844543011608948e-04
+calendartime_300s_3sub,seconds,CalendarTime,300,3,2,n_returns,78
+calendartime_300s_3sub,seconds,CalendarTime,300,3,2,interval,9.87179487179487225035e-01
+calendartime_300s_3sub,seconds,CalendarTime,300,3,2,returns_sum,6.13240781303847626305e-03
+calendartime_300s_3sub,seconds,CalendarTime,300,3,2,returns_sumsq,1.92874877717832744382e-05
+calendartime_300s_3sub,seconds,CalendarTime,300,3,2,returns_first,-1.33697297675539061856e-04
+calendartime_300s_3sub,seconds,CalendarTime,300,3,2,returns_last,1.22066883454508001705e-04
+calendartime_300s_3sub,seconds,CalendarTime,300,3,3,n_returns,78
+calendartime_300s_3sub,seconds,CalendarTime,300,3,3,interval,9.87179487179487225035e-01
+calendartime_300s_3sub,seconds,CalendarTime,300,3,3,returns_sum,6.67143484037069356418e-03
+calendartime_300s_3sub,seconds,CalendarTime,300,3,3,returns_sumsq,2.29828705935396329944e-05
+calendartime_300s_3sub,seconds,CalendarTime,300,3,3,returns_first,9.71738102963470851137e-04
+calendartime_300s_3sub,seconds,CalendarTime,300,3,3,returns_last,-7.14542953055286034214e-05
