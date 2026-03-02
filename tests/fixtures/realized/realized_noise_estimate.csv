@@ -1,0 +1,95 @@
+# realized_noise_estimate fixture data — Octave/MATLAB reference for parity testing
+# Generated from synthetic high-frequency data: rng(42,'twister'), T_hf=2000,
+#   hf_returns=0.0001*randn(T_hf,1), hf_prices=100*exp(cumsum(hf_returns)),
+#   hf_times_seconds=linspace(34200,57600,T_hf)'
+# Source: realized/realized_noise_estimate.m — Microstructure noise variance estimation
+# Human-readable CSV counterpart of realized_noise_estimate.npy
+# Validation: numpy.testing.assert_allclose(actual, expected, atol=1e-6, rtol=1e-4)
+#
+# Data Source: generate_fixtures.m synthetic data
+#   T_hf = 2000 observations
+#   hf_returns ~ N(0, 0.0001^2)
+#   hf_prices: geometric random walk starting at 100
+#   hf_times_seconds: evenly spaced in [34200, 57600] (seconds since midnight, 9:30 AM - 4:00 PM)
+#   RNG state: rng(42,'twister') then epsilon(1000), data_mv(1000x3), then hf_returns(2000)
+#
+# Function signature:
+#   [noiseVariance, debiasedNoiseVariance, IQEstimate, noiseEstimateOomen] =
+#       realized_noise_estimate(price, time, timeType, options)
+#
+# Output descriptions:
+#   noiseVariance:          Bandi-Russell noise variance estimate = RV / (2*n),
+#                           where RV is realized variance at noise-frequency sampling
+#                           and n is the effective number of returns.
+#   debiasedNoiseVariance:  BNHLS debiased noise variance =
+#                           exp(log(noiseVariance) - medFreqRK / medFreqRV),
+#                           correcting for the bias in the Bandi-Russell estimator.
+#   IQEstimate:             Integrated quarticity lower bound = lowFreqRV^2,
+#                           computed from low-frequency realized variance squared.
+#   noiseEstimateOomen:     Oomen (2006) AC(1) noise estimator =
+#                           -1/(n-1) * r(1:end-1)' * r(2:end),
+#                           the negative first-order autocovariance of log-returns.
+#
+# Options used (from realized_options('kernel') defaults):
+#   useAdjustedNoiseCount:        True (count only non-zero returns for effective n)
+#   medFrequencySamplingType:     BusinessUniform
+#   medFrequencySamplingInterval: 390
+#   medFrequencyKernel:           parzen
+#   medFrequencyBandwidth:        5
+#   noiseVarianceSamplingType:    BusinessUniform
+#   noiseVarianceSamplingInterval:120
+#   IQEstimationSamplingType:     BusinessUniform
+#   IQEstimationSamplingInterval: 39
+#
+# Test scenarios:
+#   1. default_kernel_seconds:     Default kernel options, timeType='seconds'
+#   2. bartlett_kernel_seconds:    medFrequencyKernel='bartlett' (changes debiased estimate)
+#   3. businesstime_noise_seconds: noiseVarianceSamplingType='BusinessTime', interval=1,
+#                                  useAdjustedNoiseCount=False (tick-level noise estimation)
+#   4. qs_kernel_seconds:          medFrequencyKernel='qs' (Quadratic Spectral kernel)
+#   5. large_iq_interval:          IQEstimationSamplingInterval=100 (coarser IQ estimation)
+#   6. bandwidth_10:               medFrequencyBandwidth=10 (wider kernel bandwidth)
+#
+# Notes:
+#   - Scenarios 1, 2, 4, 5, 6 share the same noiseVariance and noiseEstimateOomen since
+#     those values depend only on noiseVarianceSamplingType/Interval (unchanged across them).
+#   - Scenario 3 uses BusinessTime tick-level sampling with interval=1, yielding all 2000
+#     original prices, producing a much smaller noise variance estimate.
+#   - The negative noiseEstimateOomen in scenarios 1, 2, 4, 5, 6 is expected for this
+#     synthetic dataset with BusinessUniform(120) sampling: the ~120 uniformly sampled prices
+#     produce log-returns whose AC(1) covariance is slightly positive, negated by the -1/(n-1)
+#     factor. This does not indicate an error.
+#   - Scenario 3 uses tick-by-tick data (BusinessTime, interval=1), producing a positive Oomen
+#     estimate since fine-grained returns exhibit negative autocorrelation (bid-ask bounce effect
+#     would occur in real data; here the positive value is due to noise structure of the synthetic
+#     process).
+#   - The debiasedNoiseVariance differs across kernel types because the medium-frequency
+#     realized kernel (RK/RV ratio in the exp correction) varies with the kernel shape.
+#   - All noiseVariance values are in the order of 1e-08 to 1e-07, consistent with the
+#     low-volatility synthetic returns (sigma ≈ 0.0001 per tick).
+#
+scenario,timeType,medFrequencyKernel,medFrequencyBandwidth,noiseVarianceSamplingType,noiseVarianceSamplingInterval,IQEstimationSamplingInterval,useAdjustedNoiseCount,output_name,value
+default_kernel_seconds,seconds,parzen,5,BusinessUniform,120,39,True,noiseVariance,7.1551193436582263e-08
+default_kernel_seconds,seconds,parzen,5,BusinessUniform,120,39,True,debiasedNoiseVariance,2.5677477964871313e-08
+default_kernel_seconds,seconds,parzen,5,BusinessUniform,120,39,True,IQEstimate,5.2645980296326463e-10
+default_kernel_seconds,seconds,parzen,5,BusinessUniform,120,39,True,noiseEstimateOomen,-2.5929331426790696e-08
+bartlett_kernel_seconds,seconds,bartlett,5,BusinessUniform,120,39,True,noiseVariance,7.1551193436582263e-08
+bartlett_kernel_seconds,seconds,bartlett,5,BusinessUniform,120,39,True,debiasedNoiseVariance,2.3757232689846228e-08
+bartlett_kernel_seconds,seconds,bartlett,5,BusinessUniform,120,39,True,IQEstimate,5.2645980296326463e-10
+bartlett_kernel_seconds,seconds,bartlett,5,BusinessUniform,120,39,True,noiseEstimateOomen,-2.5929331426790696e-08
+businesstime_noise_seconds,seconds,parzen,5,BusinessTime,1,39,False,noiseVariance,5.0062996591356539e-09
+businesstime_noise_seconds,seconds,parzen,5,BusinessTime,1,39,False,debiasedNoiseVariance,1.7966038441683713e-09
+businesstime_noise_seconds,seconds,parzen,5,BusinessTime,1,39,False,IQEstimate,5.2645980296326463e-10
+businesstime_noise_seconds,seconds,parzen,5,BusinessTime,1,39,False,noiseEstimateOomen,2.9640378538215691e-10
+qs_kernel_seconds,seconds,qs,5,BusinessUniform,120,39,True,noiseVariance,7.1551193436582263e-08
+qs_kernel_seconds,seconds,qs,5,BusinessUniform,120,39,True,debiasedNoiseVariance,2.2313591412905304e-08
+qs_kernel_seconds,seconds,qs,5,BusinessUniform,120,39,True,IQEstimate,5.2645980296326463e-10
+qs_kernel_seconds,seconds,qs,5,BusinessUniform,120,39,True,noiseEstimateOomen,-2.5929331426790696e-08
+large_iq_interval,seconds,parzen,5,BusinessUniform,120,100,True,noiseVariance,7.1551193436582263e-08
+large_iq_interval,seconds,parzen,5,BusinessUniform,120,100,True,debiasedNoiseVariance,2.5677477964871313e-08
+large_iq_interval,seconds,parzen,5,BusinessUniform,120,100,True,IQEstimate,3.2727995172815232e-10
+large_iq_interval,seconds,parzen,5,BusinessUniform,120,100,True,noiseEstimateOomen,-2.5929331426790696e-08
+bandwidth_10,seconds,parzen,10,BusinessUniform,120,39,True,noiseVariance,7.1551193436582263e-08
+bandwidth_10,seconds,parzen,10,BusinessUniform,120,39,True,debiasedNoiseVariance,2.1925555785828899e-08
+bandwidth_10,seconds,parzen,10,BusinessUniform,120,39,True,IQEstimate,5.2645980296326463e-10
+bandwidth_10,seconds,parzen,10,BusinessUniform,120,39,True,noiseEstimateOomen,-2.5929331426790696e-08
