@@ -1,0 +1,104 @@
+# realized_twoscale_variance fixture data — Octave/MATLAB reference for parity testing
+# Generated from synthetic high-frequency data: rng(42,'twister'), T_hf=2000,
+#   hf_returns=0.0001*randn(T_hf,1), hf_prices=100*exp(cumsum(hf_returns)),
+#   hf_times_seconds=linspace(34200,57600,T_hf)'
+# Source: realized/realized_twoscale_variance.m — Two-Scale Realized Variance (Ait-Sahalia, Mykland, Zhang)
+# Human-readable CSV counterpart of realized_twoscale_variance.npy
+# Validation: numpy.testing.assert_allclose(actual, expected, atol=1e-6, rtol=1e-4)
+#
+# Data Source: generate_fixtures.m synthetic data
+#   T_hf = 2000 observations
+#   hf_returns ~ N(0, 0.0001^2)
+#   hf_prices: geometric random walk starting at 100
+#   hf_times_seconds: evenly spaced in [34200, 57600] (seconds since midnight, 9:30 AM - 4:00 PM)
+#   RNG state: rng(42,'twister') then epsilon(1000), data_mv(1000x3), then hf_returns(2000)
+#
+# Function signature:
+#   [rvts, rvtsSS, rvtsD, rvtsSSD, diagnostics] = realized_twoscale_variance(
+#       price, time, timeType, samplingType, samplingInterval, subsamples, options)
+#
+# Output descriptions:
+#   rvts:     Two-scale realized variance estimate (Eq. 55: RVq - nbar/n * RV1)
+#   rvtsSS:   Subsampled two-scale RV (averaged over subsamples offset grids)
+#   rvtsD:    Debiased two-scale RV (Eq. 64: (1 - nbar/n)^(-1) * rvts)
+#   rvtsSSD:  Subsampled debiased two-scale RV ((1 - nbar/n)^(-1) * rvtsSS)
+#   diagnostics.bandwidth:              Ratio of slow scale to fast scale (ceiled integer >= 2)
+#   diagnostics.noiseVariance:          Bandi-Russell noise variance estimate
+#   diagnostics.debiasedNoiseVariance:  Bias-adjusted noise variance estimate
+#   diagnostics.IQEstimate:             Integrated quarticity estimate
+#
+# Key formulas (from Ait-Sahalia, Mykland, Zhang 2005, 2011):
+#   filteredLogPrice = realized_price_filter(log(price), ...)
+#   n = length(filteredLogPrice) - 1
+#   K = bandwidth (slow scale)
+#   nbar = (n - K + 1) / K
+#   RVq = overlap_realized_variance(filteredLogPrice, K) / overlapScale
+#   RV1 = overlap_realized_variance(filteredLogPrice, 1)
+#   rvts = RVq - nbar/n * RV1
+#   rvtsD = (1 - nbar/n)^(-1) * rvts
+#   cOpt = ((12 * selectedNoiseVariance^2) / IQEstimate)^(1/3)
+#   bandwidth = ceil(cOpt * n^(2/3))
+#
+# Test scenarios:
+#   1. calendartime_300s:      CalendarTime 300s, seconds, subsamples=1 — standard 5-min fast scale
+#   2. businesstime_10ticks:   BusinessTime 10 ticks, seconds, subsamples=1 — tick-based sampling
+#   3. calendartime_300s_5sub: CalendarTime 300s, seconds, subsamples=5 — subsampled variant
+#   4. price_only:             Price-only input (defaults: BusinessTime 1 tick, subsamples=1)
+#   5. businesstime_10ticks_5sub: BusinessTime 10 ticks, seconds, subsamples=5 — subsampled tick
+#
+# Notes:
+#   - When subsamples=1, rvtsSS = rvts and rvtsSSD = rvtsD (single grid, no averaging).
+#   - The bandwidth is automatically selected via the optimal bandwidth formula:
+#     cOpt = ((12 * sigma_noise^2) / IQ)^(1/3), bandwidth = ceil(cOpt * n^(2/3)).
+#   - For this low-volatility synthetic data, the optimal bandwidth is 2 (minimum),
+#     triggering a warning: "The selected bandwidth is less than 2."
+#   - The noise/IQ estimates do not depend on samplingType/samplingInterval;
+#     they are computed once from the raw price data.
+#   - The price-only call uses MATLAB defaults: time=linspace(9.5*3600,16*3600,m)',
+#     timeType='seconds', samplingType='businesstime', samplingInterval=1, subsamples=1.
+#   - The debiased version (rvtsD, rvtsSSD) is the recommended estimator
+#     (see comments in realized_twoscale_variance.m).
+#   - All variance values are in the order of 1e-05, consistent with the
+#     low-volatility synthetic returns (sigma ≈ 0.0001 per tick).
+#
+scenario,timeType,samplingType,samplingInterval,subsamples,output_name,value
+calendartime_300s,seconds,CalendarTime,300,1,rvts,1.3723011288772106e-05
+calendartime_300s,seconds,CalendarTime,300,1,rvtsSS,1.3723011288772106e-05
+calendartime_300s,seconds,CalendarTime,300,1,rvtsD,2.7098604570233526e-05
+calendartime_300s,seconds,CalendarTime,300,1,rvtsSSD,2.7098604570233526e-05
+calendartime_300s,seconds,CalendarTime,300,1,diagnostics.bandwidth,2
+calendartime_300s,seconds,CalendarTime,300,1,diagnostics.noiseVariance,5.0224288890945125e-09
+calendartime_300s,seconds,CalendarTime,300,1,diagnostics.debiasedNoiseVariance,1.4811851328097681e-09
+calendartime_300s,seconds,CalendarTime,300,1,diagnostics.IQEstimate,7.6849181982984765e-10
+businesstime_10ticks,seconds,BusinessTime,10,1,rvts,1.1475985523446325e-05
+businesstime_10ticks,seconds,BusinessTime,10,1,rvtsSS,1.1475985523446325e-05
+businesstime_10ticks,seconds,BusinessTime,10,1,rvtsD,2.2837782136211593e-05
+businesstime_10ticks,seconds,BusinessTime,10,1,rvtsSSD,2.2837782136211593e-05
+businesstime_10ticks,seconds,BusinessTime,10,1,diagnostics.bandwidth,2
+businesstime_10ticks,seconds,BusinessTime,10,1,diagnostics.noiseVariance,5.0224288890945125e-09
+businesstime_10ticks,seconds,BusinessTime,10,1,diagnostics.debiasedNoiseVariance,1.4811851328097681e-09
+businesstime_10ticks,seconds,BusinessTime,10,1,diagnostics.IQEstimate,7.6849181982984765e-10
+calendartime_300s_5sub,seconds,CalendarTime,300,5,rvts,1.3723011288772106e-05
+calendartime_300s_5sub,seconds,CalendarTime,300,5,rvtsSS,1.2708649907506954e-05
+calendartime_300s_5sub,seconds,CalendarTime,300,5,rvtsD,2.7098604570233526e-05
+calendartime_300s_5sub,seconds,CalendarTime,300,5,rvtsSSD,2.5095561842671962e-05
+calendartime_300s_5sub,seconds,CalendarTime,300,5,diagnostics.bandwidth,2
+calendartime_300s_5sub,seconds,CalendarTime,300,5,diagnostics.noiseVariance,5.0224288890945125e-09
+calendartime_300s_5sub,seconds,CalendarTime,300,5,diagnostics.debiasedNoiseVariance,1.4811851328097681e-09
+calendartime_300s_5sub,seconds,CalendarTime,300,5,diagnostics.IQEstimate,7.6849181982984765e-10
+price_only,seconds,BusinessTime,1,1,rvts,9.4235183086913944e-06
+price_only,seconds,BusinessTime,1,1,rvtsSS,9.4235183086913944e-06
+price_only,seconds,BusinessTime,1,1,rvtsD,1.8837613099074096e-05
+price_only,seconds,BusinessTime,1,1,rvtsSSD,1.8837613099074096e-05
+price_only,seconds,BusinessTime,1,1,diagnostics.bandwidth,2
+price_only,seconds,BusinessTime,1,1,diagnostics.noiseVariance,5.0224288890945125e-09
+price_only,seconds,BusinessTime,1,1,diagnostics.debiasedNoiseVariance,1.4811851328097681e-09
+price_only,seconds,BusinessTime,1,1,diagnostics.IQEstimate,7.6849181982984765e-10
+businesstime_10ticks_5sub,seconds,BusinessTime,10,5,rvts,1.1475985523446325e-05
+businesstime_10ticks_5sub,seconds,BusinessTime,10,5,rvtsSS,1.1912425309185476e-05
+businesstime_10ticks_5sub,seconds,BusinessTime,10,5,rvtsD,2.2837782136211593e-05
+businesstime_10ticks_5sub,seconds,BusinessTime,10,5,rvtsSSD,2.3706319023254682e-05
+businesstime_10ticks_5sub,seconds,BusinessTime,10,5,diagnostics.bandwidth,2
+businesstime_10ticks_5sub,seconds,BusinessTime,10,5,diagnostics.noiseVariance,5.0224288890945125e-09
+businesstime_10ticks_5sub,seconds,BusinessTime,10,5,diagnostics.debiasedNoiseVariance,1.4811851328097681e-09
+businesstime_10ticks_5sub,seconds,BusinessTime,10,5,diagnostics.IQEstimate,7.6849181982984765e-10
