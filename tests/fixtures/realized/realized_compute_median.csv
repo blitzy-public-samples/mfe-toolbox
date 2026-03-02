@@ -1,0 +1,138 @@
+# realized_compute_median fixture data — Octave/MATLAB reference for parity testing
+# Generated from handcrafted test vectors using GNU Octave 8.4.0, MFE Toolbox Version 4.0
+# Source: realized/realized_compute_median.m — Median price computation for tick data deduplication
+# Human-readable CSV counterpart of realized_compute_median.npy
+# Validation: numpy.testing.assert_allclose(actual, expected, atol=1e-6, rtol=1e-4)
+#
+# Function signature:
+#   [medianPrice, medianTime, totalVol, nObs] = realized_compute_median(price, time, volume)
+#
+# The function groups high-frequency prices by timestamp and computes the
+# median price for each group of observations at the same timestamp:
+#   - Size 1 groups: median = the single price
+#   - Size 2 groups: median = arithmetic mean of the two prices
+#   - Size 3+ groups: standard median (middle element if odd, mean of two middle if even)
+#
+# Output descriptions:
+#   medianPrice:  n-by-1 vector of median prices (n = number of unique timestamps)
+#   medianTime:   n-by-1 vector of unique timestamps
+#   totalVol:     n-by-1 vector of total volume at each timestamp
+#   nObs:         n-by-1 vector of observation counts per timestamp
+#
+# Volume note:
+#   The MATLAB implementation computes totalVol after the switch-case block via
+#   totalVol(j) = sum(volume(loc))' where loc is a sizes(i)-by-len(j) matrix.
+#   When there are multiple groups of the SAME size (especially size=1), the
+#   sum operates across all groups of that size, producing a scalar that gets
+#   broadcast. This is a known quirk of the MATLAB code (Ref: realized_compute_median.m:105).
+#
+# Test scenarios:
+#   1. all_unique:      5 prices with unique timestamps (all singleton groups), with volume
+#   2. even_groups:     6 prices with 3 timestamps, 2 prices each (even-length groups)
+#   3. odd_groups:      9 prices with 3 timestamps, 3 prices each (odd-length groups)
+#   4. mixed_groups:    10 prices with 4 timestamps, groups of size 1, 2, 3, 4
+#   5. single_element:  1 price, 1 timestamp (degenerate case), no volume
+#   6. no_volume:       4 prices, 2 timestamps, volume omitted (defaults to zeros)
+#   7. sorted_within:   6 prices already sorted within each group, 3 per timestamp
+#   8. even_four:       8 prices, 2 timestamps, 4 prices each (even larger groups)
+#   9. odd_five:        10 prices, 2 timestamps, 5 prices each (odd larger groups)
+#
+# Generated with: GNU Octave 8.4.0, MFE Toolbox Version 4.0
+#
+scenario,n_input,n_groups,group_sizes,has_volume,output_name,index,value
+all_unique,5,5,1,yes,medianPrice,0,1.0050000000000000e+02
+all_unique,5,5,1,yes,medianPrice,1,1.0120000000000000e+02
+all_unique,5,5,1,yes,medianPrice,2,9.9799999999999997e+01
+all_unique,5,5,1,yes,medianPrice,3,1.0009999999999999e+02
+all_unique,5,5,1,yes,medianPrice,4,1.0090000000000001e+02
+all_unique,5,5,1,yes,medianTime,0,1.0000000000000000e+00
+all_unique,5,5,1,yes,medianTime,1,2.0000000000000000e+00
+all_unique,5,5,1,yes,medianTime,2,3.0000000000000000e+00
+all_unique,5,5,1,yes,medianTime,3,4.0000000000000000e+00
+all_unique,5,5,1,yes,medianTime,4,5.0000000000000000e+00
+all_unique,5,5,1,yes,totalVol,0,7.5000000000000000e+02
+all_unique,5,5,1,yes,totalVol,1,7.5000000000000000e+02
+all_unique,5,5,1,yes,totalVol,2,7.5000000000000000e+02
+all_unique,5,5,1,yes,totalVol,3,7.5000000000000000e+02
+all_unique,5,5,1,yes,totalVol,4,7.5000000000000000e+02
+all_unique,5,5,1,yes,nObs,0,1.0000000000000000e+00
+all_unique,5,5,1,yes,nObs,1,1.0000000000000000e+00
+all_unique,5,5,1,yes,nObs,2,1.0000000000000000e+00
+all_unique,5,5,1,yes,nObs,3,1.0000000000000000e+00
+all_unique,5,5,1,yes,nObs,4,1.0000000000000000e+00
+even_groups,6,3,2,yes,medianPrice,0,1.0050000000000000e+02
+even_groups,6,3,2,yes,medianPrice,1,9.9500000000000000e+01
+even_groups,6,3,2,yes,medianPrice,2,1.0000000000000000e+02
+even_groups,6,3,2,yes,medianTime,0,1.0000000000000000e+00
+even_groups,6,3,2,yes,medianTime,1,2.0000000000000000e+00
+even_groups,6,3,2,yes,medianTime,2,3.0000000000000000e+00
+even_groups,6,3,2,yes,totalVol,0,3.0000000000000000e+02
+even_groups,6,3,2,yes,totalVol,1,4.0000000000000000e+02
+even_groups,6,3,2,yes,totalVol,2,4.0000000000000000e+02
+even_groups,6,3,2,yes,nObs,0,2.0000000000000000e+00
+even_groups,6,3,2,yes,nObs,1,2.0000000000000000e+00
+even_groups,6,3,2,yes,nObs,2,2.0000000000000000e+00
+odd_groups,9,3,3,yes,medianPrice,0,1.0100000000000000e+02
+odd_groups,9,3,3,yes,medianPrice,1,9.8000000000000000e+01
+odd_groups,9,3,3,yes,medianPrice,2,1.0400000000000000e+02
+odd_groups,9,3,3,yes,medianTime,0,1.0000000000000000e+00
+odd_groups,9,3,3,yes,medianTime,1,2.0000000000000000e+00
+odd_groups,9,3,3,yes,medianTime,2,3.0000000000000000e+00
+odd_groups,9,3,3,yes,totalVol,0,4.5000000000000000e+02
+odd_groups,9,3,3,yes,totalVol,1,7.2500000000000000e+02
+odd_groups,9,3,3,yes,totalVol,2,6.2500000000000000e+02
+odd_groups,9,3,3,yes,nObs,0,3.0000000000000000e+00
+odd_groups,9,3,3,yes,nObs,1,3.0000000000000000e+00
+odd_groups,9,3,3,yes,nObs,2,3.0000000000000000e+00
+mixed_groups,10,4,"1,2,3,4",yes,medianPrice,0,1.0050000000000000e+02
+mixed_groups,10,4,"1,2,3,4",yes,medianPrice,1,1.0000000000000000e+02
+mixed_groups,10,4,"1,2,3,4",yes,medianPrice,2,1.0000000000000000e+02
+mixed_groups,10,4,"1,2,3,4",yes,medianPrice,3,1.0050000000000000e+02
+mixed_groups,10,4,"1,2,3,4",yes,medianTime,0,1.0000000000000000e+00
+mixed_groups,10,4,"1,2,3,4",yes,medianTime,1,2.0000000000000000e+00
+mixed_groups,10,4,"1,2,3,4",yes,medianTime,2,3.0000000000000000e+00
+mixed_groups,10,4,"1,2,3,4",yes,medianTime,3,4.0000000000000000e+00
+mixed_groups,10,4,"1,2,3,4",yes,totalVol,0,1.0000000000000000e+02
+mixed_groups,10,4,"1,2,3,4",yes,totalVol,1,3.5000000000000000e+02
+mixed_groups,10,4,"1,2,3,4",yes,totalVol,2,7.2500000000000000e+02
+mixed_groups,10,4,"1,2,3,4",yes,totalVol,3,9.7500000000000000e+02
+mixed_groups,10,4,"1,2,3,4",yes,nObs,0,1.0000000000000000e+00
+mixed_groups,10,4,"1,2,3,4",yes,nObs,1,2.0000000000000000e+00
+mixed_groups,10,4,"1,2,3,4",yes,nObs,2,3.0000000000000000e+00
+mixed_groups,10,4,"1,2,3,4",yes,nObs,3,4.0000000000000000e+00
+single_element,1,1,1,no,medianPrice,0,3.1400000000000001e+00
+single_element,1,1,1,no,medianTime,0,1.0000000000000000e+00
+single_element,1,1,1,no,totalVol,0,0.0000000000000000e+00
+single_element,1,1,1,no,nObs,0,1.0000000000000000e+00
+no_volume,4,2,2,no,medianPrice,0,1.0050000000000000e+02
+no_volume,4,2,2,no,medianPrice,1,1.0000000000000000e+02
+no_volume,4,2,2,no,medianTime,0,1.0000000000000000e+00
+no_volume,4,2,2,no,medianTime,1,2.0000000000000000e+00
+no_volume,4,2,2,no,totalVol,0,0.0000000000000000e+00
+no_volume,4,2,2,no,totalVol,1,0.0000000000000000e+00
+no_volume,4,2,2,no,nObs,0,2.0000000000000000e+00
+no_volume,4,2,2,no,nObs,1,2.0000000000000000e+00
+sorted_within,6,2,3,yes,medianPrice,0,1.0000000000000000e+02
+sorted_within,6,2,3,yes,medianPrice,1,9.9000000000000000e+01
+sorted_within,6,2,3,yes,medianTime,0,1.0000000000000000e+00
+sorted_within,6,2,3,yes,medianTime,1,2.0000000000000000e+00
+sorted_within,6,2,3,yes,totalVol,0,6.0000000000000000e+02
+sorted_within,6,2,3,yes,totalVol,1,7.5000000000000000e+02
+sorted_within,6,2,3,yes,nObs,0,3.0000000000000000e+00
+sorted_within,6,2,3,yes,nObs,1,3.0000000000000000e+00
+even_four,8,2,4,yes,medianPrice,0,1.0050000000000000e+02
+even_four,8,2,4,yes,medianPrice,1,1.0000000000000000e+02
+even_four,8,2,4,yes,medianTime,0,1.0000000000000000e+00
+even_four,8,2,4,yes,medianTime,1,2.0000000000000000e+00
+even_four,8,2,4,yes,totalVol,0,1.0000000000000000e+02
+even_four,8,2,4,yes,totalVol,1,2.6000000000000000e+02
+even_four,8,2,4,yes,nObs,0,4.0000000000000000e+00
+even_four,8,2,4,yes,nObs,1,4.0000000000000000e+00
+odd_five,10,2,5,yes,medianPrice,0,1.0100000000000000e+02
+odd_five,10,2,5,yes,medianPrice,1,9.9000000000000000e+01
+odd_five,10,2,5,yes,medianTime,0,1.0000000000000000e+00
+odd_five,10,2,5,yes,medianTime,1,2.0000000000000000e+00
+odd_five,10,2,5,yes,totalVol,0,1.5000000000000000e+02
+odd_five,10,2,5,yes,totalVol,1,4.0000000000000000e+02
+odd_five,10,2,5,yes,nObs,0,5.0000000000000000e+00
+odd_five,10,2,5,yes,nObs,1,5.0000000000000000e+00
