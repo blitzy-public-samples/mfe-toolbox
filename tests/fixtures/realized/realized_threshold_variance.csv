@@ -1,0 +1,87 @@
+# realized_threshold_variance fixture data — Octave/MATLAB reference for parity testing
+# Generated from synthetic high-frequency data: rng(42,'twister'), T_hf=2000,
+#   hf_returns=0.0001*randn(T_hf,1), hf_prices=100*exp(cumsum(hf_returns)),
+#   hf_times_seconds=linspace(34200,57600,T_hf)'
+# Source: realized/realized_threshold_variance.m — Threshold Realized Variance (Corsi, Pirino, Reno)
+# Human-readable CSV counterpart of realized_threshold_variance.npy
+# Validation: numpy.testing.assert_allclose(actual, expected, atol=1e-6, rtol=1e-4)
+#
+# Data Source: generate_fixtures.m synthetic data
+#   T_hf = 2000 observations
+#   hf_returns ~ N(0, 0.0001^2)
+#   hf_prices: geometric random walk starting at 100
+#   hf_times_seconds: evenly spaced in [34200, 57600] (seconds since midnight, 9:30 AM - 4:00 PM)
+#   RNG state: rng(42,'twister') then epsilon(1000), data_mv(1000x3), then hf_returns(2000)
+#
+# Function signature:
+#   [rtv, rtvD, rtvSS, rtvSSD, diagnostics] = realized_threshold_variance(
+#       price, time, timeType, samplingType, samplingInterval,
+#       thresholdScale, localVar, subsamples)
+#
+# Output descriptions:
+#   rtv:   Realized threshold variance — sum of squared returns below threshold c^2 * V_i
+#   rtvD:  Debiased threshold RV — rtv + sum of expected values for thresholded returns
+#          Debiasing follows Corsi, Pirino, and Reno using:
+#            E[r_i^2 * 1(r_i^2 > c^2*V_i)] = 1/(2*normcdf(-c)*sqrt(pi)) * (2/c^2) *
+#              gamma(3/2) * gammainc(c^2/2, 3/2, 'upper') * c^2 * V_i
+#   rtvSS: Subsampled threshold RV — averaged over subsamples offset grids, scaled by mOrig/m
+#   rtvSSD: Debiased subsampled threshold RV — subsampled version with debiasing correction
+#
+# Local variance estimation:
+#   When localVar is not provided, the function estimates local variance V_i using an
+#   iterative kernel-weighted average with bandwidth L=25 (or L=subsamples*25 for SS).
+#   The kernel is Gaussian: K(j) = (1/sqrt(2*pi)) * exp(-(j/L)^2/2), with K(L+(-1:1))=0.
+#   The iteration continues until V converges (indicator vector for threshold no longer changes).
+#
+# Threshold mechanism:
+#   Returns are thresholded when r_i^2 > c^2 * V_i, where c = thresholdScale (default 3).
+#   Lower thresholdScale removes more returns (more aggressive); higher keeps more (less aggressive).
+#
+# Test scenarios:
+#   1. calendartime_300s:              CalendarTime 300s, thresholdScale=3 (default), subsamples=1
+#   2. custom_threshold_5:             CalendarTime 300s, thresholdScale=5 (less aggressive)
+#   3. businesstime_10ticks:           BusinessTime 10 ticks, thresholdScale=3, subsamples=1
+#   4. calendartime_300s_5sub:         CalendarTime 300s, thresholdScale=3, subsamples=5
+#   5. custom_threshold_2:             CalendarTime 300s, thresholdScale=2 (more aggressive)
+#   6. businesstime_10ticks_5sub:      BusinessTime 10 ticks, thresholdScale=3, subsamples=5
+#   7. calendartime_600s:              CalendarTime 600s, thresholdScale=3, subsamples=1
+#
+# Notes:
+#   - With subsamples=1, rtvSS ≈ rtv and rtvSSD ≈ rtvD (single grid, no averaging).
+#   - Scenario 2 (thresholdScale=5): Very high threshold means almost no returns are flagged as
+#     jumps, so rtv ≈ rtvD (debiasing adds nearly zero). All returns retained.
+#   - Scenario 5 (thresholdScale=2): Aggressive thresholding removes many returns, yielding a
+#     much smaller rtv. The debiased rtvD compensates by adding expected values of removed returns.
+#   - Scenario 7 (CalendarTime 600s): Coarser 10-min sampling yields fewer returns (38 vs 77),
+#     and no returns exceed the threshold at scale=3, so rtv = rtvD.
+#   - All values are in the order of 1e-05 to 1e-06, consistent with the low-volatility synthetic returns.
+#
+scenario,timeType,samplingType,samplingInterval,thresholdScale,subsamples,output_name,value
+calendartime_300s,seconds,CalendarTime,300,3,1,rtv,2.1639671508037114e-05
+calendartime_300s,seconds,CalendarTime,300,3,1,rtvD,2.4150046151027384e-05
+calendartime_300s,seconds,CalendarTime,300,3,1,rtvSS,2.1639671508037114e-05
+calendartime_300s,seconds,CalendarTime,300,3,1,rtvSSD,2.4150046151027384e-05
+custom_threshold_5,seconds,CalendarTime,300,5,1,rtv,2.4669917037748029e-05
+custom_threshold_5,seconds,CalendarTime,300,5,1,rtvD,2.4669917037748029e-05
+custom_threshold_5,seconds,CalendarTime,300,5,1,rtvSS,2.4669917037748026e-05
+custom_threshold_5,seconds,CalendarTime,300,5,1,rtvSSD,2.4669917037748029e-05
+businesstime_10ticks,seconds,BusinessTime,10,3,1,rtv,1.3951114678456095e-05
+businesstime_10ticks,seconds,BusinessTime,10,3,1,rtvD,1.7085181182779781e-05
+businesstime_10ticks,seconds,BusinessTime,10,3,1,rtvSS,1.3951114678456095e-05
+businesstime_10ticks,seconds,BusinessTime,10,3,1,rtvSSD,1.7085181182779781e-05
+calendartime_300s_5sub,seconds,CalendarTime,300,3,5,rtv,2.1639671508037114e-05
+calendartime_300s_5sub,seconds,CalendarTime,300,3,5,rtvD,2.4150046151027384e-05
+calendartime_300s_5sub,seconds,CalendarTime,300,3,5,rtvSS,2.0980189893876691e-05
+calendartime_300s_5sub,seconds,CalendarTime,300,3,5,rtvSSD,2.2023083631827669e-05
+custom_threshold_2,seconds,CalendarTime,300,2,1,rtv,6.3395076281942282e-06
+custom_threshold_2,seconds,CalendarTime,300,2,1,rtvD,1.6452815165185547e-05
+custom_threshold_2,seconds,CalendarTime,300,2,1,rtvSS,6.3395076281942282e-06
+custom_threshold_2,seconds,CalendarTime,300,2,1,rtvSSD,1.6452815165185547e-05
+businesstime_10ticks_5sub,seconds,BusinessTime,10,3,5,rtv,1.3951114678456095e-05
+businesstime_10ticks_5sub,seconds,BusinessTime,10,3,5,rtvD,1.7085181182779781e-05
+businesstime_10ticks_5sub,seconds,BusinessTime,10,3,5,rtvSS,1.9775294567630036e-05
+businesstime_10ticks_5sub,seconds,BusinessTime,10,3,5,rtvSSD,2.0597510145045307e-05
+calendartime_600s,seconds,CalendarTime,600,3,1,rtv,2.2441012885141404e-05
+calendartime_600s,seconds,CalendarTime,600,3,1,rtvD,2.2441012885141404e-05
+calendartime_600s,seconds,CalendarTime,600,3,1,rtvSS,2.2441012885141410e-05
+calendartime_600s,seconds,CalendarTime,600,3,1,rtvSSD,2.2441012885141404e-05
