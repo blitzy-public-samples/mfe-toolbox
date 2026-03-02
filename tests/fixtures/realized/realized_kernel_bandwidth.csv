@@ -1,0 +1,76 @@
+# realized_kernel_bandwidth fixture data — Octave/MATLAB reference for parity testing
+# Source: realized/realized_kernel_bandwidth.m — Optimal bandwidth for Realized Kernels
+# Human-readable CSV counterpart of realized_kernel_bandwidth.npy
+# Validation: numpy.testing.assert_allclose(actual, expected, atol=1e-6, rtol=1e-4)
+#
+# Function signature:
+#   bandwidth = realized_kernel_bandwidth(noiseVariance, IQEstimate, options)
+#
+# Inputs:
+#   noiseVariance: Estimated microstructure noise variance (non-negative scalar)
+#   IQEstimate:    Estimated integrated quarticity (positive scalar)
+#   options:       Struct with fields:
+#                    .kernel    — kernel type string (see kernel table below)
+#                    .filteredN — number of filtered price observations (positive integer)
+#
+# Output:
+#   bandwidth: Optimal bandwidth computed from plug-in noise/IQ estimates (scalar >= 0)
+#
+# Algorithm (Ref: realized_kernel_bandwidth.m:112-126):
+#   1. Compute xi^2 = noiseVariance / sqrt(IQEstimate)
+#   2. If xi^2 > 1, cap xi^2 = 1 (protects against IQ near zero)
+#      Ref: realized_kernel_bandwidth.m:113-116
+#   3. Retrieve nMax = options.filteredN
+#   4. Depending on kernel type:
+#      - kernelType=1 (flat-top, higher order): bandwidth = cStar * xi^(1/2) * nMax^(1/2)
+#      - kernelType=2 (flat-top, lower order):  bandwidth = cStar * xi^(2/3) * nMax^(2/3)
+#      - kernelType=3 (non-flat-top):           bandwidth = cStar * xi^(2/5) * nMax^(3/5)
+#
+# Kernel table (Ref: realized_kernel_bandwidth.m:51-108):
+#   Flat-top kernelType=1: cubic/multiscale(3.68), 5thorder(3.70), 6thorder(3.97),
+#     7thorder(4.11), 8thorder(4.31), parzen(4.77), th1(3.70), th2(5.74), th5(8.07), th16(39.16)
+#   Flat-top kernelType=2: bartlett/twoscale(2.28), 2ndorder(3.42), epanechnikov(2.46)
+#   Non-flat-top kernelType=3: nonflatparzen((144/0.269)^(1/5)=3.513355),
+#     qs((0.04/(3*pi/5))^(1/5)=0.462756), fejer((4/9/(pi/3))^(1/5)=0.842476),
+#     thinf(((pi^2/2)^2/0.52)^(1/5)=2.158277), bnhls((1/(5/4))^(1/5)=0.956352)
+#
+# Data Source:
+#   noiseVariance and IQEstimate are chosen as representative plug-in values.
+#   filteredN=79 corresponds to CalendarTime 300s sampling of a 23400-second trading day
+#   (9:30-16:00, giving 23400/300 ≈ 78 intervals, 79 price observations).
+#   filteredN=2000 corresponds to tick-level data (BusinessTime interval=1).
+#
+# Test scenarios:
+#   1. nonflatparzen_default:      kernel='nonflatparzen', noiseVar=1e-6, IQ=1e-8, filteredN=79
+#   2. qs_default:                 kernel='qs', noiseVar=1e-6, IQ=1e-8, filteredN=79
+#   3. bartlett_default:           kernel='bartlett', noiseVar=1e-6, IQ=1e-8, filteredN=79
+#   4. parzen_default:             kernel='parzen', noiseVar=1e-6, IQ=1e-8, filteredN=79
+#   5. fejer_default:              kernel='fejer', noiseVar=1e-6, IQ=1e-8, filteredN=79
+#   6. bnhls_default:              kernel='bnhls', noiseVar=1e-6, IQ=1e-8, filteredN=79
+#   7. nonflatparzen_highnoise:    kernel='nonflatparzen', noiseVar=1e-4, IQ=1e-6, filteredN=79
+#   8. nonflatparzen_lownoise:     kernel='nonflatparzen', noiseVar=1e-8, IQ=1e-10, filteredN=79
+#   9. nonflatparzen_largeN:       kernel='nonflatparzen', noiseVar=1e-6, IQ=1e-8, filteredN=2000
+#  10. nonflatparzen_xicapped:     kernel='nonflatparzen', noiseVar=1e-2, IQ=1e-8, filteredN=79
+#                                  (xiSquared=100 → capped to 1.0)
+#
+# Notes:
+#   - xiSquared is capped at 1.0 when noiseVariance/sqrt(IQEstimate) > 1
+#     (scenario 10 triggers this cap: 1e-2/sqrt(1e-8)=100 → capped to 1)
+#   - Bandwidth is a continuous (non-integer) value; rounding occurs upstream in realized_kernel
+#   - 'parzen' is a flat-top kernel (kernelType=1); 'nonflatparzen' is non-flat-top (kernelType=3)
+#   - 'bartlett' and 'twoscale' share cStar=2.28 and kernelType=2
+#   - 'cubic' and 'multiscale' share cStar=3.68 and kernelType=1
+#   - All values computed by replicating MATLAB formulas in Python (numpy) with float64 precision
+#   - Reference: Barndorff-Nielsen, Hansen, Lunde and Shephard (2008)
+#
+scenario,kernel,noiseVariance,IQEstimate,filteredN,output_name,value
+nonflatparzen_default,nonflatparzen,1.0e-06,1.0e-08,79,bandwidth,7.6612264114952211e+00
+qs_default,qs,1.0e-06,1.0e-08,79,bandwidth,1.0090856458627779e+00
+bartlett_default,bartlett,1.0e-06,1.0e-08,79,bandwidth,1.9484364308783169e+00
+parzen_default,parzen,1.0e-06,1.0e-08,79,bandwidth,4.2396687370595352e+00
+fejer_default,fejer,1.0e-06,1.0e-08,79,bandwidth,1.8371052046452256e+00
+bnhls_default,bnhls,1.0e-06,1.0e-08,79,bandwidth,2.0854234472198958e+00
+nonflatparzen_highnoise,nonflatparzen,1.0e-04,1.0e-06,79,bandwidth,1.9244130671757681e+01
+nonflatparzen_lownoise,nonflatparzen,1.0e-08,1.0e-10,79,bandwidth,3.0499891696500860e+00
+nonflatparzen_largeN,nonflatparzen,1.0e-06,1.0e-08,2000,bandwidth,5.3252504754222052e+01
+nonflatparzen_xicapped,nonflatparzen,1.0e-02,1.0e-08,79,bandwidth,4.8339070720585461e+01
