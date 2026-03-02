@@ -1,0 +1,71 @@
+# realized_multiscale_variance fixture data — Octave/MATLAB reference for parity testing
+# Generated from simulated high-frequency price data (T_hf=2000, rng(42,'twister'))
+# Source: realized/realized_multiscale_variance.m — Zhang multi-scale realized variance estimator
+# Human-readable CSV counterpart of realized_multiscale_variance.npy
+# Validation: numpy.testing.assert_allclose(actual, expected, atol=1e-6, rtol=1e-4)
+#
+# Data Source: Simulated high-frequency prices
+#   T_hf = 2000 observations
+#   hf_returns = 0.0001 * randn(T_hf, 1) with rng(42, 'twister') after prior draws
+#   hf_prices = 100 * exp(cumsum(hf_returns))
+#   hf_times_seconds = linspace(34200, 57600, T_hf)' (9:30 AM to 4:00 PM in seconds)
+#
+# Function signature:
+#   [rvms, rvmsSS, diagnostics] = realized_multiscale_variance(
+#       price, time, timeType, samplingType, samplingInterval, subsamples, options)
+#
+# Output descriptions:
+#   rvms:                          Multi-scale realized variance estimate (Zhang 2006)
+#   rvmsSS:                        Subsampled multi-scale realized variance
+#   diagnostics.bandwidth:         Optimal bandwidth (slow/fast scale ratio), ceiled integer >= 2
+#   diagnostics.noiseVariance:     Bandi-Russell noise variance estimate
+#   diagnostics.debiasedNoiseVariance: Bias-adjusted noise variance estimate
+#   diagnostics.IQEstimate:        Integrated quarticity estimate used for bandwidth selection
+#
+# Test scenarios:
+#   1. default_calendartime_300s:  CalendarTime 300s, seconds, subsamples=1 — standard 5-min fast scale
+#   2. price_only:                 Price-only call (defaults: BusinessTime 1 tick, subsamples=1)
+#   3. businesstime_10ticks:       BusinessTime 10 ticks, seconds, subsamples=1
+#   4. calendartime_300s_5sub:     CalendarTime 300s, seconds, subsamples=5 — subsampled variant
+#   5. businesstime_10ticks_5sub:  BusinessTime 10 ticks, seconds, subsamples=5
+#
+# Notes:
+#   - When subsamples=1, rvms and rvmsSS are identical (no subsampling offset averaging).
+#   - Bandwidth is automatically selected via bisection on derivative of MSE expression
+#     (Eq. 37 of Zhang 2006), using noise variance and IQ plug-in estimates.
+#   - The noise/IQ estimates are computed once from the raw price data and reused across
+#     scenarios with the same price input; they do not depend on samplingType/samplingInterval.
+#   - The price-only call uses MATLAB defaults: time=linspace(9.5*3600,16*3600,m)',
+#     timeType='seconds', samplingType='businesstime', samplingInterval=1, subsamples=1.
+#
+scenario,timeType,samplingType,samplingInterval,subsamples,output_name,value
+default_calendartime_300s,seconds,CalendarTime,300,1,rvms,1.998735733584346e-05
+default_calendartime_300s,seconds,CalendarTime,300,1,rvmsSS,1.998735733584346e-05
+default_calendartime_300s,seconds,CalendarTime,300,1,diagnostics.bandwidth,3
+default_calendartime_300s,seconds,CalendarTime,300,1,diagnostics.noiseVariance,5.022428889094512e-09
+default_calendartime_300s,seconds,CalendarTime,300,1,diagnostics.debiasedNoiseVariance,1.481185132809768e-09
+default_calendartime_300s,seconds,CalendarTime,300,1,diagnostics.IQEstimate,7.684918198298476e-10
+price_only,seconds,BusinessTime,1,1,rvms,1.990537756729597e-05
+price_only,seconds,BusinessTime,1,1,rvmsSS,1.990537756729597e-05
+price_only,seconds,BusinessTime,1,1,diagnostics.bandwidth,3
+price_only,seconds,BusinessTime,1,1,diagnostics.noiseVariance,5.022428889094512e-09
+price_only,seconds,BusinessTime,1,1,diagnostics.debiasedNoiseVariance,1.481185132809768e-09
+price_only,seconds,BusinessTime,1,1,diagnostics.IQEstimate,7.684918198298476e-10
+businesstime_10ticks,seconds,BusinessTime,10,1,rvms,2.718107617795995e-05
+businesstime_10ticks,seconds,BusinessTime,10,1,rvmsSS,2.718107617795995e-05
+businesstime_10ticks,seconds,BusinessTime,10,1,diagnostics.bandwidth,3
+businesstime_10ticks,seconds,BusinessTime,10,1,diagnostics.noiseVariance,5.022428889094512e-09
+businesstime_10ticks,seconds,BusinessTime,10,1,diagnostics.debiasedNoiseVariance,1.481185132809768e-09
+businesstime_10ticks,seconds,BusinessTime,10,1,diagnostics.IQEstimate,7.684918198298476e-10
+calendartime_300s_5sub,seconds,CalendarTime,300,5,rvms,1.998735733584346e-05
+calendartime_300s_5sub,seconds,CalendarTime,300,5,rvmsSS,2.100333494163446e-05
+calendartime_300s_5sub,seconds,CalendarTime,300,5,diagnostics.bandwidth,3
+calendartime_300s_5sub,seconds,CalendarTime,300,5,diagnostics.noiseVariance,5.022428889094512e-09
+calendartime_300s_5sub,seconds,CalendarTime,300,5,diagnostics.debiasedNoiseVariance,1.481185132809768e-09
+calendartime_300s_5sub,seconds,CalendarTime,300,5,diagnostics.IQEstimate,7.684918198298476e-10
+businesstime_10ticks_5sub,seconds,BusinessTime,10,5,rvms,2.718107617795995e-05
+businesstime_10ticks_5sub,seconds,BusinessTime,10,5,rvmsSS,2.692308734083032e-05
+businesstime_10ticks_5sub,seconds,BusinessTime,10,5,diagnostics.bandwidth,3
+businesstime_10ticks_5sub,seconds,BusinessTime,10,5,diagnostics.noiseVariance,5.022428889094512e-09
+businesstime_10ticks_5sub,seconds,BusinessTime,10,5,diagnostics.debiasedNoiseVariance,1.481185132809768e-09
+businesstime_10ticks_5sub,seconds,BusinessTime,10,5,diagnostics.IQEstimate,7.684918198298476e-10
