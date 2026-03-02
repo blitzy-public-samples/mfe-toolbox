@@ -1,0 +1,115 @@
+# unit2seconds fixture data — Octave/MATLAB reference for parity testing
+# Source: realized/unit2seconds.m — Unit-to-seconds past midnight conversion helper
+# Human-readable CSV counterpart of unit2seconds.npy
+# Validation: numpy.testing.assert_allclose(actual, expected, atol=1e-6, rtol=1e-4)
+#
+# Function signature:
+#   seconds = unit2seconds(unit, seconds0, seconds1)
+#
+# Converts unit-interval times (fractions in [0, 1] between seconds0 and seconds1)
+# to seconds past midnight.
+#
+# Core conversion formula (Ref: unit2seconds.m:63):
+#   seconds = seconds0 + (seconds1 - seconds0) * unit
+#
+# Input descriptions:
+#   unit:      m-by-1 column vector of times measured as fraction of time
+#              between seconds0 and seconds1 (0 maps to seconds0, 1 to seconds1)
+#   seconds0:  base time in seconds past midnight (maps to 0 on the unit interval)
+#   seconds1:  end time in seconds past midnight (maps to 1 on the unit interval)
+#
+# Output descriptions:
+#   seconds:   m-by-1 column vector of times expressed as seconds past midnight
+#              (e.g. 3600 = 01:00:00, 43215 = 12:00:15)
+#
+# Input constraints (from unit2seconds.m:31-56):
+#   - seconds0 >= 0 (non-negative)
+#   - seconds1 >= 0 (non-negative)
+#   - seconds1 > seconds0 (strict ordering, checked with eps tolerance)
+#   - unit is cast to double; transposed if row vector
+#   - unit must be a column vector (m-by-1)
+#
+# Conversion reference examples:
+#   unit2seconds(0.0, 34200, 57600) = 34200  (9:30 AM market open)
+#   unit2seconds(0.5, 34200, 57600) = 45900  (12:45 PM midpoint)
+#   unit2seconds(1.0, 34200, 57600) = 57600  (4:00 PM market close)
+#   unit2seconds(0.0, 28800, 64800) = 28800  (8:00 AM extended open)
+#   unit2seconds(1.0, 28800, 64800) = 64800  (6:00 PM extended close)
+#
+# Test scenarios:
+#   1. standard_market_hours: 14 unit values (i/13 for i=0..13) mapped to
+#                             30-min-interval seconds from 34200-57600,
+#                             seconds0=34200 (9:30), seconds1=57600 (16:00),
+#                             range=23400 sec
+#   2. edge_values:           unit=[0,1] -> seconds=[34200,57600]
+#   3. midpoint:              unit=[0,0.5,1] -> seconds=[34200,45900,57600]
+#                             (45900 = 12:45:00 is exact midpoint of 9:30-16:00)
+#   4. extended_hours:        11 unit values (i/10 for i=0..10) mapped to
+#                             hourly seconds from 28800-64800,
+#                             seconds0=28800 (8:00), seconds1=64800 (18:00),
+#                             range=36000 sec
+#
+# Generated with: GNU Octave 8.4.0, MFE Toolbox Version 4.0
+# Ref: unit2seconds.m:63 — core algorithm: seconds=seconds0+(seconds1-seconds0)*unit
+#
+scenario,seconds0,seconds1,output_name,index,value
+standard_market_hours,34200,57600,unit_input,0,0.0000000000000000e+00
+standard_market_hours,34200,57600,unit_input,1,7.6923076923076927e-02
+standard_market_hours,34200,57600,unit_input,2,1.5384615384615385e-01
+standard_market_hours,34200,57600,unit_input,3,2.3076923076923078e-01
+standard_market_hours,34200,57600,unit_input,4,3.0769230769230771e-01
+standard_market_hours,34200,57600,unit_input,5,3.8461538461538464e-01
+standard_market_hours,34200,57600,unit_input,6,4.6153846153846156e-01
+standard_market_hours,34200,57600,unit_input,7,5.3846153846153844e-01
+standard_market_hours,34200,57600,unit_input,8,6.1538461538461542e-01
+standard_market_hours,34200,57600,unit_input,9,6.9230769230769229e-01
+standard_market_hours,34200,57600,unit_input,10,7.6923076923076927e-01
+standard_market_hours,34200,57600,unit_input,11,8.4615384615384615e-01
+standard_market_hours,34200,57600,unit_input,12,9.2307692307692313e-01
+standard_market_hours,34200,57600,unit_input,13,1.0000000000000000e+00
+standard_market_hours,34200,57600,seconds,0,3.4200000000000000e+04
+standard_market_hours,34200,57600,seconds,1,3.6000000000000000e+04
+standard_market_hours,34200,57600,seconds,2,3.7800000000000000e+04
+standard_market_hours,34200,57600,seconds,3,3.9600000000000000e+04
+standard_market_hours,34200,57600,seconds,4,4.1400000000000000e+04
+standard_market_hours,34200,57600,seconds,5,4.3200000000000000e+04
+standard_market_hours,34200,57600,seconds,6,4.5000000000000000e+04
+standard_market_hours,34200,57600,seconds,7,4.6800000000000000e+04
+standard_market_hours,34200,57600,seconds,8,4.8600000000000000e+04
+standard_market_hours,34200,57600,seconds,9,5.0400000000000000e+04
+standard_market_hours,34200,57600,seconds,10,5.2200000000000000e+04
+standard_market_hours,34200,57600,seconds,11,5.4000000000000000e+04
+standard_market_hours,34200,57600,seconds,12,5.5800000000000000e+04
+standard_market_hours,34200,57600,seconds,13,5.7600000000000000e+04
+edge_values,34200,57600,unit_input,0,0.0000000000000000e+00
+edge_values,34200,57600,unit_input,1,1.0000000000000000e+00
+edge_values,34200,57600,seconds,0,3.4200000000000000e+04
+edge_values,34200,57600,seconds,1,5.7600000000000000e+04
+midpoint,34200,57600,unit_input,0,0.0000000000000000e+00
+midpoint,34200,57600,unit_input,1,5.0000000000000000e-01
+midpoint,34200,57600,unit_input,2,1.0000000000000000e+00
+midpoint,34200,57600,seconds,0,3.4200000000000000e+04
+midpoint,34200,57600,seconds,1,4.5900000000000000e+04
+midpoint,34200,57600,seconds,2,5.7600000000000000e+04
+extended_hours,28800,64800,unit_input,0,0.0000000000000000e+00
+extended_hours,28800,64800,unit_input,1,1.0000000000000001e-01
+extended_hours,28800,64800,unit_input,2,2.0000000000000001e-01
+extended_hours,28800,64800,unit_input,3,2.9999999999999999e-01
+extended_hours,28800,64800,unit_input,4,4.0000000000000002e-01
+extended_hours,28800,64800,unit_input,5,5.0000000000000000e-01
+extended_hours,28800,64800,unit_input,6,5.9999999999999998e-01
+extended_hours,28800,64800,unit_input,7,6.9999999999999996e-01
+extended_hours,28800,64800,unit_input,8,8.0000000000000004e-01
+extended_hours,28800,64800,unit_input,9,9.0000000000000002e-01
+extended_hours,28800,64800,unit_input,10,1.0000000000000000e+00
+extended_hours,28800,64800,seconds,0,2.8800000000000000e+04
+extended_hours,28800,64800,seconds,1,3.2400000000000000e+04
+extended_hours,28800,64800,seconds,2,3.6000000000000000e+04
+extended_hours,28800,64800,seconds,3,3.9600000000000000e+04
+extended_hours,28800,64800,seconds,4,4.3200000000000000e+04
+extended_hours,28800,64800,seconds,5,4.6800000000000000e+04
+extended_hours,28800,64800,seconds,6,5.0400000000000000e+04
+extended_hours,28800,64800,seconds,7,5.4000000000000000e+04
+extended_hours,28800,64800,seconds,8,5.7600000000000000e+04
+extended_hours,28800,64800,seconds,9,6.1200000000000000e+04
+extended_hours,28800,64800,seconds,10,6.4800000000000000e+04
