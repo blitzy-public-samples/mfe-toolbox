@@ -1,0 +1,160 @@
+# realized_kernel fixture data — Octave/MATLAB reference for parity testing
+# Generated from synthetic high-frequency data: rng(42,'twister'), T_hf=2000,
+#   hf_returns=0.0001*randn(T_hf,1), hf_prices=100*exp(cumsum(hf_returns)),
+#   hf_times_seconds=linspace(34200,57600,T_hf)'
+# Source: realized/realized_kernel.m — Realized Kernel estimator (Barndorff-Nielsen, Hansen, Lunde, Shephard)
+# Human-readable CSV counterpart of realized_kernel.npy
+# Validation: numpy.testing.assert_allclose(actual, expected, atol=1e-6, rtol=1e-4)
+#
+# Data Source: generate_fixtures.m synthetic data
+#   T_hf = 2000 observations
+#   hf_returns ~ N(0, 0.0001^2)
+#   hf_prices: geometric random walk starting at 100
+#   hf_times_seconds: evenly spaced in [34200, 57600] (seconds since midnight, 9:30 AM - 4:00 PM)
+#   RNG state: rng(42,'twister') then epsilon(1000), data_mv(1000x3), then hf_returns(2000)
+#
+# Function signature:
+#   [rk, rkAdjusted, diagnostics] = realized_kernel(
+#       price, time, timeType, samplingType, samplingInterval, options)
+#
+# Output descriptions:
+#   rk:         Realized kernel estimate of quadratic variation
+#   rkAdjusted: Bias-adjusted RK recognizing that less than the entire sample was used
+#               rkAdjusted = rk / adjustment, where adjustment is the fraction of the
+#               time span covered after excluding bandwidth lags from both ends
+#   bandwidth:  Number of lags used in the kernel (auto-selected from noise variance and IQ)
+#   adjustment: De-biasing ratio: (filteredTime(n-bw) - filteredTime(1+bw)) / (time(m) - time(1))
+#               For jittered endpoints, adjustment = 1.0 by construction
+#   jitterLags: Number of endpoint observations averaged for jitter pre-averaging (when applicable)
+#
+# Kernel types tested:
+#   Non-flat-top kernels (infinite support or smooth decay):
+#     nonflatparzen: Modified Parzen kernel (default) — optimal rate n^{-2/5}
+#     qs:           Quadratic Spectral (Andrews) — optimal rate n^{-2/5}
+#     fejer:        Fejer (Dirichlet) kernel — optimal rate n^{-1/5}
+#     bnhls:        Barndorff-Nielsen, Hansen, Lunde, Shephard kernel
+#   Flat-top kernels (finite support, k(0)=1):
+#     bartlett:     Bartlett/triangular — optimal rate n^{-1/3}
+#     parzen:       Parzen (flat-top variant) — optimal rate n^{-2/5}
+#     cubic:        Cubic kernel — optimal rate n^{-2/5}
+#     th2:          Tukey-Hanning 2nd order — optimal rate n^{-2/5}
+#     epanechnikov: Epanechnikov kernel — optimal rate n^{-1/3}
+#     twoscale:     Two-scale kernel — optimal rate n^{-1/3}
+#
+# End treatment options:
+#   jitter (default):  Pre-average jitterLags endpoint observations to reduce boundary bias.
+#                      With jitter, adjustment=1.0 and rk=rkAdjusted.
+#   stagger:           No endpoint pre-averaging. Adjustment < 1.0, so rkAdjusted > rk
+#                      to compensate for the reduced effective sample.
+#
+# Diagnostics structure fields:
+#   kernel:               String name of the kernel used
+#   bandwidth:            Optimal bandwidth (number of lags) — auto-computed from noise/IQ estimates
+#   adjustment:           De-biasing adjustment factor
+#   filteredPrice:        Prices after sampling filter
+#   filteredTime:         Time stamps after sampling filter
+#   noiseVariance:        Bandi-Russell noise variance estimate (when bandwidth auto-computed)
+#   debiasedNoiseVariance: Bias-adjusted noise variance estimate
+#   jitterLags:           Number of jitter lags (only present when endTreatment='jitter')
+#
+# Noise variance estimates (from S1/S5 diagnostics):
+#   noiseVariance = 8.8001615266462750e-08
+#   debiasedNoiseVariance = 2.5952917816110637e-08
+#
+# Test scenarios:
+#   1. default_nonflatparzen_calendartime_300s: Default nonflatparzen kernel, CalendarTime 300s, jitter
+#   2. qs_kernel_calendartime_300s:             QS kernel, CalendarTime 300s, jitter
+#   3. bartlett_kernel_calendartime_300s:        Bartlett (flat-top) kernel, CalendarTime 300s, jitter
+#   4. parzen_kernel_calendartime_300s:          Flat-top Parzen kernel, CalendarTime 300s, jitter
+#   5. cubic_kernel_calendartime_300s:           Cubic (flat-top) kernel, CalendarTime 300s, jitter
+#   6. th2_kernel_calendartime_300s:             Tukey-Hanning 2nd order, CalendarTime 300s, jitter
+#   7. epanechnikov_kernel_calendartime_300s:    Epanechnikov kernel, CalendarTime 300s, jitter
+#   8. twoscale_kernel_calendartime_300s:        Twoscale kernel, CalendarTime 300s, jitter
+#   9. bnhls_kernel_calendartime_300s:           BNHLS kernel, CalendarTime 300s, jitter
+#  10. fejer_kernel_calendartime_300s:            Fejer kernel, CalendarTime 300s, jitter
+#  11. default_businesstime_1tick:                Default nonflatparzen, BusinessTime 1 tick, jitter
+#  12. default_businesstime_10ticks:              Default nonflatparzen, BusinessTime 10 ticks, jitter
+#  13. nonflatparzen_stagger_calendartime_300s:   Nonflatparzen, CalendarTime 300s, stagger (no jitter)
+#  14. nonflatparzen_stagger_businesstime_1tick:  Nonflatparzen, BusinessTime 1 tick, stagger (no jitter)
+#  15. qs_jitter_businesstime_1tick:              QS kernel, BusinessTime 1 tick, explicit jitter
+#  16. price_only_default:                        Price-only input (default BusinessTime 1, jitter)
+#
+# Notes:
+#   - Default endTreatment is 'jitter', so scenarios 1-12,15-16 use endpoint pre-averaging.
+#   - With jitter, adjustment=1.0 and rk=rkAdjusted for all kernels.
+#   - Scenarios 13-14 use 'stagger' (no jitter), showing adjustment < 1.0 and rkAdjusted > rk.
+#   - The twoscale and bartlett kernels produce identical rk values (both use same bandwidth formula).
+#   - The epanechnikov and bartlett/twoscale kernels also produce identical rk (similar bandwidth).
+#   - Scenario 16 (price-only) is equivalent to scenario 11 (default BusinessTime 1 tick, jitter).
+#   - All rk values are in the order of 1e-05, consistent with the low-volatility synthetic returns.
+#   - Bandwidth varies by kernel family: bartlett/twoscale/epanechnikov ≈ 1, parzen/th2 ≈ 2-3,
+#     nonflatparzen ≈ 5, qs/fejer/bnhls ≈ 0.6-1.3 for CalendarTime; larger for BusinessTime.
+#
+scenario,timeType,samplingType,samplingInterval,kernel,endTreatment,output_name,value
+default_nonflatparzen_calendartime_300s,seconds,CalendarTime,300,nonflatparzen,jitter,rk,2.4755594676956898e-05
+default_nonflatparzen_calendartime_300s,seconds,CalendarTime,300,nonflatparzen,jitter,rkAdjusted,2.4755594676956898e-05
+default_nonflatparzen_calendartime_300s,seconds,CalendarTime,300,nonflatparzen,jitter,bandwidth,4.8413524998278916e+00
+default_nonflatparzen_calendartime_300s,seconds,CalendarTime,300,nonflatparzen,jitter,adjustment,1.0000000000000000e+00
+qs_kernel_calendartime_300s,seconds,CalendarTime,300,qs,jitter,rk,2.5082805184615398e-05
+qs_kernel_calendartime_300s,seconds,CalendarTime,300,qs,jitter,rkAdjusted,2.5082805184615398e-05
+qs_kernel_calendartime_300s,seconds,CalendarTime,300,qs,jitter,bandwidth,6.3767066155466146e-01
+qs_kernel_calendartime_300s,seconds,CalendarTime,300,qs,jitter,adjustment,1.0000000000000000e+00
+bartlett_kernel_calendartime_300s,seconds,CalendarTime,300,bartlett,jitter,rk,2.7430147232645187e-05
+bartlett_kernel_calendartime_300s,seconds,CalendarTime,300,bartlett,jitter,rkAdjusted,2.7430147232645187e-05
+bartlett_kernel_calendartime_300s,seconds,CalendarTime,300,bartlett,jitter,bandwidth,9.0670689985954900e-01
+bartlett_kernel_calendartime_300s,seconds,CalendarTime,300,bartlett,jitter,adjustment,1.0000000000000000e+00
+parzen_kernel_calendartime_300s,seconds,CalendarTime,300,parzen,jitter,rk,2.6720752006410097e-05
+parzen_kernel_calendartime_300s,seconds,CalendarTime,300,parzen,jitter,rkAdjusted,2.6720752006410097e-05
+parzen_kernel_calendartime_300s,seconds,CalendarTime,300,parzen,jitter,bandwidth,2.3887320372131446e+00
+parzen_kernel_calendartime_300s,seconds,CalendarTime,300,parzen,jitter,adjustment,1.0000000000000000e+00
+cubic_kernel_calendartime_300s,seconds,CalendarTime,300,cubic,jitter,rk,2.5301961553939913e-05
+cubic_kernel_calendartime_300s,seconds,CalendarTime,300,cubic,jitter,rkAdjusted,2.5301961553939913e-05
+cubic_kernel_calendartime_300s,seconds,CalendarTime,300,cubic,jitter,bandwidth,1.8428792236780656e+00
+cubic_kernel_calendartime_300s,seconds,CalendarTime,300,cubic,jitter,adjustment,1.0000000000000000e+00
+th2_kernel_calendartime_300s,seconds,CalendarTime,300,th2,jitter,rk,2.6146674672479318e-05
+th2_kernel_calendartime_300s,seconds,CalendarTime,300,th2,jitter,rkAdjusted,2.6146674672479318e-05
+th2_kernel_calendartime_300s,seconds,CalendarTime,300,th2,jitter,bandwidth,2.8744909630195914e+00
+th2_kernel_calendartime_300s,seconds,CalendarTime,300,th2,jitter,adjustment,1.0000000000000000e+00
+epanechnikov_kernel_calendartime_300s,seconds,CalendarTime,300,epanechnikov,jitter,rk,2.7430147232645187e-05
+epanechnikov_kernel_calendartime_300s,seconds,CalendarTime,300,epanechnikov,jitter,rkAdjusted,2.7430147232645187e-05
+epanechnikov_kernel_calendartime_300s,seconds,CalendarTime,300,epanechnikov,jitter,bandwidth,9.7828902353267133e-01
+epanechnikov_kernel_calendartime_300s,seconds,CalendarTime,300,epanechnikov,jitter,adjustment,1.0000000000000000e+00
+twoscale_kernel_calendartime_300s,seconds,CalendarTime,300,twoscale,jitter,rk,2.7430147232645187e-05
+twoscale_kernel_calendartime_300s,seconds,CalendarTime,300,twoscale,jitter,rkAdjusted,2.7430147232645187e-05
+twoscale_kernel_calendartime_300s,seconds,CalendarTime,300,twoscale,jitter,bandwidth,9.0670689985954900e-01
+twoscale_kernel_calendartime_300s,seconds,CalendarTime,300,twoscale,jitter,adjustment,1.0000000000000000e+00
+bnhls_kernel_calendartime_300s,seconds,CalendarTime,300,bnhls,jitter,rk,2.9110826762348155e-05
+bnhls_kernel_calendartime_300s,seconds,CalendarTime,300,bnhls,jitter,rkAdjusted,2.9110826762348155e-05
+bnhls_kernel_calendartime_300s,seconds,CalendarTime,300,bnhls,jitter,bandwidth,1.3178399223718125e+00
+bnhls_kernel_calendartime_300s,seconds,CalendarTime,300,bnhls,jitter,adjustment,1.0000000000000000e+00
+fejer_kernel_calendartime_300s,seconds,CalendarTime,300,fejer,jitter,rk,2.4101068330113901e-05
+fejer_kernel_calendartime_300s,seconds,CalendarTime,300,fejer,jitter,rkAdjusted,2.4101068330113901e-05
+fejer_kernel_calendartime_300s,seconds,CalendarTime,300,fejer,jitter,bandwidth,1.1609203797463754e+00
+fejer_kernel_calendartime_300s,seconds,CalendarTime,300,fejer,jitter,adjustment,1.0000000000000000e+00
+default_businesstime_1tick,seconds,BusinessTime,1,nonflatparzen,jitter,rk,2.3257374535410638e-05
+default_businesstime_1tick,seconds,BusinessTime,1,nonflatparzen,jitter,rkAdjusted,2.3257374535410638e-05
+default_businesstime_1tick,seconds,BusinessTime,1,nonflatparzen,jitter,bandwidth,3.3651811494190355e+01
+default_businesstime_1tick,seconds,BusinessTime,1,nonflatparzen,jitter,adjustment,1.0000000000000000e+00
+default_businesstime_1tick,seconds,BusinessTime,1,nonflatparzen,jitter,jitterLags,2.0000000000000000e+00
+default_businesstime_10ticks,seconds,BusinessTime,10,nonflatparzen,jitter,rk,2.4705731293485987e-05
+default_businesstime_10ticks,seconds,BusinessTime,10,nonflatparzen,jitter,rkAdjusted,2.4705731293485987e-05
+default_businesstime_10ticks,seconds,BusinessTime,10,nonflatparzen,jitter,bandwidth,8.4782864275390342e+00
+default_businesstime_10ticks,seconds,BusinessTime,10,nonflatparzen,jitter,adjustment,1.0000000000000000e+00
+nonflatparzen_stagger_calendartime_300s,seconds,CalendarTime,300,nonflatparzen,stagger,rk,2.1676557886534059e-05
+nonflatparzen_stagger_calendartime_300s,seconds,CalendarTime,300,nonflatparzen,stagger,rkAdjusted,2.4864286987494951e-05
+nonflatparzen_stagger_calendartime_300s,seconds,CalendarTime,300,nonflatparzen,stagger,bandwidth,4.8413524998278916e+00
+nonflatparzen_stagger_calendartime_300s,seconds,CalendarTime,300,nonflatparzen,stagger,adjustment,8.7179487179487181e-01
+nonflatparzen_stagger_businesstime_1tick,seconds,BusinessTime,1,nonflatparzen,stagger,rk,2.2628988669688707e-05
+nonflatparzen_stagger_businesstime_1tick,seconds,BusinessTime,1,nonflatparzen,stagger,rkAdjusted,2.3425866572091009e-05
+nonflatparzen_stagger_businesstime_1tick,seconds,BusinessTime,1,nonflatparzen,stagger,bandwidth,3.3651811494190355e+01
+nonflatparzen_stagger_businesstime_1tick,seconds,BusinessTime,1,nonflatparzen,stagger,adjustment,9.6598299149574762e-01
+qs_jitter_businesstime_1tick,seconds,BusinessTime,1,qs,jitter,rk,2.3403981913772360e-05
+qs_jitter_businesstime_1tick,seconds,BusinessTime,1,qs,jitter,rkAdjusted,2.3403981913772360e-05
+qs_jitter_businesstime_1tick,seconds,BusinessTime,1,qs,jitter,bandwidth,4.4323921670186124e+00
+qs_jitter_businesstime_1tick,seconds,BusinessTime,1,qs,jitter,adjustment,1.0000000000000000e+00
+qs_jitter_businesstime_1tick,seconds,BusinessTime,1,qs,jitter,jitterLags,2.0000000000000000e+00
+price_only_default,seconds,BusinessTime,1,nonflatparzen,jitter,rk,2.3257374535410638e-05
+price_only_default,seconds,BusinessTime,1,nonflatparzen,jitter,rkAdjusted,2.3257374535410638e-05
+price_only_default,seconds,BusinessTime,1,nonflatparzen,jitter,bandwidth,3.3651811494190355e+01
+price_only_default,seconds,BusinessTime,1,nonflatparzen,jitter,adjustment,1.0000000000000000e+00
+price_only_default,seconds,BusinessTime,1,nonflatparzen,jitter,jitterLags,2.0000000000000000e+00
