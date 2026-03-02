@@ -1,0 +1,84 @@
+# realized_convert2unit fixture data — Octave/MATLAB reference for parity testing
+# Source: realized/realized_convert2unit.m — Time-to-unit conversion helper
+# Human-readable CSV counterpart of realized_convert2unit.npy
+# Validation: numpy.testing.assert_allclose(actual, expected, atol=1e-6, rtol=1e-4)
+#
+# Function signature:
+#   [time, time0, time1, samplingInterval] = realized_convert2unit(
+#       time, timeType, samplingType, samplingInterval)
+#
+# Converts wall clock (HHMMSS) or seconds-past-midnight times to the unit
+# interval [0, 1], where 0 maps to min(time) and 1 maps to max(time).
+# Also converts samplingInterval for CalendarTime and Fixed sampling types.
+#
+# Output descriptions:
+#   time:             m-by-1 vector of original times mapped to [0, 1]
+#   time0:            Base time in original format (maps to 0)
+#   time1:            End time in original format (maps to 1)
+#   samplingInterval: Sampling interval converted to unit scale (CalendarTime/Fixed)
+#                     or unchanged (BusinessTime/BusinessUniform/CalendarUniform)
+#
+# Conversion logic:
+#   wall -> seconds via wall2seconds: secs = 3600*hr + 60*mm + ss
+#   seconds -> unit: unit = (seconds - seconds0) / (seconds1 - seconds0)
+#   CalendarTime SI:  SI_unit = SI_secs / (seconds1 - seconds0)
+#
+# Test scenarios:
+#   1. wall_calendartime_300s:    Wall clock 8 times (9:30-16:00), CalendarTime 300s
+#   2. seconds_calendartime_300s: Seconds 10 times (34200-57600), CalendarTime 300s
+#   3. seconds_businesstime_10:   Seconds 10 times (34200-57600), BusinessTime 10 ticks
+#                                 (samplingInterval passes through unchanged)
+#   4. wall_calendaruniform_2:    Wall clock 2 times (9:30, 16:00), CalendarUniform 5
+#                                 (minimal/single-value input)
+#
+# Data generation:
+#   Scenario 1: wall_times = [93000; 100000; 110000; 120000; 130000; 140000; 150000; 160000]
+#   Scenario 2: sec_times  = linspace(34200, 57600, 10)'
+#   Scenario 3: sec_times  = linspace(34200, 57600, 10)' (same as S2)
+#   Scenario 4: wall_min   = [93000; 160000]
+#
+# Generated with: GNU Octave 8.4.0, MFE Toolbox Version 4.0
+#
+scenario,timeType,samplingType,samplingInterval_input,output_name,index,value
+wall_calendartime_300s,wall,CalendarTime,300,time0,-1,9.3000000000000000e+04
+wall_calendartime_300s,wall,CalendarTime,300,time1,-1,1.6000000000000000e+05
+wall_calendartime_300s,wall,CalendarTime,300,samplingInterval,-1,1.2820512820512820e-02
+wall_calendartime_300s,wall,CalendarTime,300,time,0,0.0000000000000000e+00
+wall_calendartime_300s,wall,CalendarTime,300,time,1,7.6923076923076927e-02
+wall_calendartime_300s,wall,CalendarTime,300,time,2,2.3076923076923078e-01
+wall_calendartime_300s,wall,CalendarTime,300,time,3,3.8461538461538464e-01
+wall_calendartime_300s,wall,CalendarTime,300,time,4,5.3846153846153844e-01
+wall_calendartime_300s,wall,CalendarTime,300,time,5,6.9230769230769229e-01
+wall_calendartime_300s,wall,CalendarTime,300,time,6,8.4615384615384615e-01
+wall_calendartime_300s,wall,CalendarTime,300,time,7,1.0000000000000000e+00
+seconds_calendartime_300s,seconds,CalendarTime,300,time0,-1,3.4200000000000000e+04
+seconds_calendartime_300s,seconds,CalendarTime,300,time1,-1,5.7600000000000000e+04
+seconds_calendartime_300s,seconds,CalendarTime,300,samplingInterval,-1,1.2820512820512820e-02
+seconds_calendartime_300s,seconds,CalendarTime,300,time,0,0.0000000000000000e+00
+seconds_calendartime_300s,seconds,CalendarTime,300,time,1,1.1111111111111110e-01
+seconds_calendartime_300s,seconds,CalendarTime,300,time,2,2.2222222222222221e-01
+seconds_calendartime_300s,seconds,CalendarTime,300,time,3,3.3333333333333331e-01
+seconds_calendartime_300s,seconds,CalendarTime,300,time,4,4.4444444444444442e-01
+seconds_calendartime_300s,seconds,CalendarTime,300,time,5,5.5555555555555558e-01
+seconds_calendartime_300s,seconds,CalendarTime,300,time,6,6.6666666666666663e-01
+seconds_calendartime_300s,seconds,CalendarTime,300,time,7,7.7777777777777779e-01
+seconds_calendartime_300s,seconds,CalendarTime,300,time,8,8.8888888888888884e-01
+seconds_calendartime_300s,seconds,CalendarTime,300,time,9,1.0000000000000000e+00
+seconds_businesstime_10,seconds,BusinessTime,10,time0,-1,3.4200000000000000e+04
+seconds_businesstime_10,seconds,BusinessTime,10,time1,-1,5.7600000000000000e+04
+seconds_businesstime_10,seconds,BusinessTime,10,samplingInterval,-1,1.0000000000000000e+01
+seconds_businesstime_10,seconds,BusinessTime,10,time,0,0.0000000000000000e+00
+seconds_businesstime_10,seconds,BusinessTime,10,time,1,1.1111111111111110e-01
+seconds_businesstime_10,seconds,BusinessTime,10,time,2,2.2222222222222221e-01
+seconds_businesstime_10,seconds,BusinessTime,10,time,3,3.3333333333333331e-01
+seconds_businesstime_10,seconds,BusinessTime,10,time,4,4.4444444444444442e-01
+seconds_businesstime_10,seconds,BusinessTime,10,time,5,5.5555555555555558e-01
+seconds_businesstime_10,seconds,BusinessTime,10,time,6,6.6666666666666663e-01
+seconds_businesstime_10,seconds,BusinessTime,10,time,7,7.7777777777777779e-01
+seconds_businesstime_10,seconds,BusinessTime,10,time,8,8.8888888888888884e-01
+seconds_businesstime_10,seconds,BusinessTime,10,time,9,1.0000000000000000e+00
+wall_calendaruniform_2,wall,CalendarUniform,5,time0,-1,9.3000000000000000e+04
+wall_calendaruniform_2,wall,CalendarUniform,5,time1,-1,1.6000000000000000e+05
+wall_calendaruniform_2,wall,CalendarUniform,5,samplingInterval,-1,5.0000000000000000e+00
+wall_calendaruniform_2,wall,CalendarUniform,5,time,0,0.0000000000000000e+00
+wall_calendaruniform_2,wall,CalendarUniform,5,time,1,1.0000000000000000e+00
