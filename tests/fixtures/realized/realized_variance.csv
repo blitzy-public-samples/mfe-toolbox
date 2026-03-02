@@ -1,0 +1,75 @@
+# realized_variance fixture data — Octave/MATLAB reference for parity testing
+# Generated from synthetic high-frequency data: rng(42,'twister'), T_hf=2000,
+#   hf_returns=0.0001*randn(T_hf,1), hf_prices=100*exp(cumsum(hf_returns)),
+#   hf_times_seconds=linspace(34200,57600,T_hf)'
+# Source: realized/realized_variance.m — Realized Variance and subsampled Realized Variance
+# Human-readable CSV counterpart of realized_variance.npy
+# Validation: numpy.testing.assert_allclose(actual, expected, atol=1e-6, rtol=1e-4)
+#
+# Data Source: generate_fixtures.m synthetic data
+#   T_hf = 2000 observations
+#   hf_returns ~ N(0, 0.0001^2)
+#   hf_prices: geometric random walk starting at 100
+#   hf_times_seconds: evenly spaced in [34200, 57600] (seconds since midnight, 9:30 AM - 4:00 PM)
+#   hf_times_wall: seconds2wall(hf_times_seconds) (HHMMSS wall clock format)
+#   hf_times_unit: (hf_times_seconds - 34200) / (57600 - 34200) (unit-normalized [0, 1])
+#   RNG state: rng(42,'twister') then epsilon(1000), data_mv(1000x3), then hf_returns(2000)
+#
+# Function signature:
+#   [rv, rvSS] = realized_variance(price, time, timeType, samplingType,
+#       samplingInterval, subsamples)
+#
+# Output descriptions:
+#   rv:   Realized variance estimate — sum of squared log-returns from filtered prices.
+#         Computed as returns' * returns where returns = diff(filteredLogPrice).
+#         Ref: realized_variance.m:143
+#   rvSS: Subsampled realized variance — average of subsampled RV estimates weighted
+#         by (baseCount / totalCount) to correct for varying subsample sizes.
+#         When subsamples=1, rvSS = rv identically (no subsample averaging).
+#         Ref: realized_variance.m:146-157
+#
+# Filtering note:
+#   Prices are first filtered via realized_price_filter which implements calendar-time,
+#   business-time, calendar-uniform, business-uniform, or fixed sampling. Log prices
+#   are used for return computation: filteredLogPrice = log(filteredPrice).
+#
+# Subsampling note:
+#   When subsamples > 1, the estimator constructs multiple offset grids and averages
+#   the RV computed on each grid. The weighting ensures unbiasedness:
+#   rvSS = sum(rvs) * (baseCount / totalCount), where baseCount = length of first
+#   subsample returns and totalCount = total returns across all subsamples.
+#   Ref: realized_variance.m:146-157
+#
+# Test scenarios:
+#   1. calendartime_300s:        CalendarTime 300s, seconds, subsamples=1 — standard 5-min RV
+#   2. businesstime_10ticks:     BusinessTime 10 ticks, seconds, subsamples=1 — tick-based RV
+#   3. calendaruniform_100obs:   CalendarUniform 100 obs, seconds, subsamples=1 — uniform sampling
+#   4. calendartime_300s_5sub:   CalendarTime 300s, seconds, subsamples=5 — subsampled 5-min RV
+#   5. unit_calendartime_001:    CalendarTime 0.01, unit, subsamples=1 — unit-normalized time
+#   6. wall_calendartime_300:    CalendarTime 300, wall, subsamples=1 — wall clock time
+#
+# Notes:
+#   - When subsamples=1, rv and rvSS are identical (no subsample averaging occurs).
+#   - Scenarios 1 and 6 produce identical rv/rvSS values because the same prices are
+#     filtered at the same 300-second intervals; the only difference is the time encoding.
+#   - Scenario 5 (unit time, interval=0.01) corresponds to ~234 seconds, producing a
+#     different sampling grid and therefore a different RV than 300-second calendar sampling.
+#   - Scenario 4 demonstrates subsampling: rv remains the same as scenario 1 (base grid
+#     unchanged), but rvSS differs because it averages across 5 offset grids.
+#   - All values are in the order of 1e-05, consistent with the low-volatility synthetic
+#     returns (sigma = 0.0001 per tick, ~2000 ticks).
+#   - All values computed with Octave 8.4.0 using MFE Toolbox Version 4.0.
+#
+scenario,timeType,samplingType,samplingInterval,subsamples,output_name,value
+calendartime_300s,seconds,CalendarTime,300,1,rv,2.46699170377480289608e-05
+calendartime_300s,seconds,CalendarTime,300,1,rvSS,2.46699170377480289608e-05
+businesstime_10ticks,seconds,BusinessTime,10,1,rv,1.83248635872027413924e-05
+businesstime_10ticks,seconds,BusinessTime,10,1,rvSS,1.83248635872027413924e-05
+calendaruniform_100obs,seconds,CalendarUniform,100,1,rv,2.32791632500185941945e-05
+calendaruniform_100obs,seconds,CalendarUniform,100,1,rvSS,2.32791632500185941945e-05
+calendartime_300s_5sub,seconds,CalendarTime,300,5,rv,2.46699170377480289608e-05
+calendartime_300s_5sub,seconds,CalendarTime,300,5,rvSS,2.20682160416228063395e-05
+unit_calendartime_001,unit,CalendarTime,0.01,1,rv,1.97769550141865016165e-05
+unit_calendartime_001,unit,CalendarTime,0.01,1,rvSS,1.97769550141865016165e-05
+wall_calendartime_300,wall,CalendarTime,300,1,rv,2.46699170377480289608e-05
+wall_calendartime_300,wall,CalendarTime,300,1,rvSS,2.46699170377480289608e-05
