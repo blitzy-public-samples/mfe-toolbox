@@ -1,0 +1,101 @@
+# realized_quarticity fixture data — Octave/MATLAB reference for parity testing
+# Generated from synthetic high-frequency data: rng(42,'twister'), T_hf=2000,
+#   hf_returns=0.0001*randn(T_hf,1), hf_prices=100*exp(cumsum(hf_returns)),
+#   hf_times_seconds=linspace(34200,57600,T_hf)'
+# Source: realized/realized_quarticity.m — Realized Quarticity (tripower, quadpower, BNS)
+# Human-readable CSV counterpart of realized_quarticity.npy
+# Validation: numpy.testing.assert_allclose(actual, expected, atol=1e-6, rtol=1e-4)
+#
+# Data Source: generate_fixtures.m synthetic data
+#   T_hf = 2000 observations
+#   hf_returns ~ N(0, 0.0001^2)
+#   hf_prices: geometric random walk starting at 100
+#   hf_times_seconds: evenly spaced in [34200, 57600] (seconds since midnight, 9:30 AM - 4:00 PM)
+#   RNG state: rng(42,'twister') then epsilon(1000), data_mv(1000x3), then hf_returns(2000)
+#
+# Function signature:
+#   [qt, qtSS, qtDebiased, qtSSDebiased] = realized_quarticity(
+#       price, time, timeType, samplingType, samplingInterval,
+#       QTtype, skip, subsamples)
+#
+# Output descriptions:
+#   qt:            Realized quarticity estimate (tripower, quadpower, or BNS)
+#   qtSS:          Subsampled quarticity estimate (averaged over subsamples offset grids)
+#   qtDebiased:    Debiased quarticity = qt * m / (m - k*skip - k)
+#                  where k=3 for tripower, k=4 for quadpower, k=0 for BNS
+#   qtSSDebiased:  Debiased subsampled quarticity = qtSS / biasScale
+#
+# Quarticity estimator types:
+#   'tripower':  mu_{4/3}^{-3} * m * sum(|r_i|^{4/3} * |r_{i-1-skip}|^{4/3} * |r_{i-2-2*skip}|^{4/3})
+#                where mu_{4/3} = 2^{2/3} * gamma(7/6) / gamma(1/2)
+#   'quadpower': mu_1^{-4} * m * sum(|r_i| * |r_{i-1-skip}| * |r_{i-2-2*skip}| * |r_{i-3-3*skip}|)
+#                where mu_1 = sqrt(2/pi)
+#   'bns':       (1/3) * m * sum(r_i^4) — Barndorff-Nielsen and Shephard (not jump-robust)
+#
+# Debiasing:
+#   Tripower:  biasScale = (m - 2 - 2*skip) / m — corrects for lost returns
+#   Quadpower: biasScale = (m - 3 - 3*skip) / m — corrects for lost returns
+#   BNS:       biasScale = 1.0 (no bias correction, count = m)
+#
+# Test scenarios:
+#   1. tripower_calendartime_300s:            Tripower, CalendarTime 300s, skip=0, sub=1 — default
+#   2. quadpower_calendartime_300s:           Quadpower, CalendarTime 300s, skip=0, sub=1
+#   3. tripower_calendartime_300s_skip1:      Tripower, CalendarTime 300s, skip=1, sub=1
+#   4. tripower_calendartime_300s_5sub:       Tripower, CalendarTime 300s, skip=0, sub=5
+#   5. tripower_businesstime_10ticks:         Tripower, BusinessTime 10, skip=0, sub=1
+#   6. quadpower_businesstime_10ticks:        Quadpower, BusinessTime 10, skip=0, sub=1
+#   7. tripower_businesstime_10ticks_5sub:    Tripower, BusinessTime 10, skip=0, sub=5
+#   8. quadpower_calendartime_300s_skip1:     Quadpower, CalendarTime 300s, skip=1, sub=1
+#   9. bns_calendartime_300s:                 BNS, CalendarTime 300s, skip=0, sub=1
+#  10. bns_businesstime_10ticks:              BNS, BusinessTime 10, skip=0, sub=1
+#
+# Notes:
+#   - With subsamples=1, qtSS ≈ qt and qtSSDebiased ≈ qtDebiased (single grid, no averaging).
+#   - BNS estimator is NOT robust to jumps; tripower and quadpower ARE jump-robust.
+#   - BNS has no debiasing (biasScale=1), so qtDebiased = qt and qtSSDebiased = qtSS.
+#   - Skip-k quarticity has a small downward bias of order (N-k)/N; debiasing corrects this.
+#   - Quadpower uses 4 adjacent returns → fewer effective observations → larger debiasing correction.
+#   - All values are in the order of 1e-10, consistent with quarticity of low-volatility synthetic returns.
+#   - CalendarTime 300s yields ~78 returns; BusinessTime 10 yields ~199 returns.
+#
+scenario,timeType,samplingType,samplingInterval,QTtype,skip,subsamples,output_name,value
+tripower_calendartime_300s,seconds,CalendarTime,300,tripower,0,1,qt,3.0449497974108120e-10
+tripower_calendartime_300s,seconds,CalendarTime,300,tripower,0,1,qtSS,3.0449497974108120e-10
+tripower_calendartime_300s,seconds,CalendarTime,300,tripower,0,1,qtDebiased,3.1250800552374124e-10
+tripower_calendartime_300s,seconds,CalendarTime,300,tripower,0,1,qtSSDebiased,3.1250800552374124e-10
+quadpower_calendartime_300s,seconds,CalendarTime,300,quadpower,0,1,qt,2.3186335098054093e-10
+quadpower_calendartime_300s,seconds,CalendarTime,300,quadpower,0,1,qtSS,2.3186335098054090e-10
+quadpower_calendartime_300s,seconds,CalendarTime,300,quadpower,0,1,qtDebiased,2.4113788501976258e-10
+quadpower_calendartime_300s,seconds,CalendarTime,300,quadpower,0,1,qtSSDebiased,2.4113788501976253e-10
+tripower_calendartime_300s_skip1,seconds,CalendarTime,300,tripower,1,1,qt,3.2588615372015967e-10
+tripower_calendartime_300s_skip1,seconds,CalendarTime,300,tripower,1,1,qtSS,3.2588615372015967e-10
+tripower_calendartime_300s_skip1,seconds,CalendarTime,300,tripower,1,1,qtDebiased,3.4350162148881698e-10
+tripower_calendartime_300s_skip1,seconds,CalendarTime,300,tripower,1,1,qtSSDebiased,3.4350162148881698e-10
+tripower_calendartime_300s_5sub,seconds,CalendarTime,300,tripower,0,5,qt,3.0449497974108120e-10
+tripower_calendartime_300s_5sub,seconds,CalendarTime,300,tripower,0,5,qtSS,3.4776554761412626e-10
+tripower_calendartime_300s_5sub,seconds,CalendarTime,300,tripower,0,5,qtDebiased,3.1250800552374124e-10
+tripower_calendartime_300s_5sub,seconds,CalendarTime,300,tripower,0,5,qtSSDebiased,3.5691727255134009e-10
+tripower_businesstime_10ticks,seconds,BusinessTime,10,tripower,0,1,qt,3.4008474366189502e-10
+tripower_businesstime_10ticks,seconds,BusinessTime,10,tripower,0,1,qtSS,3.4008474366189502e-10
+tripower_businesstime_10ticks,seconds,BusinessTime,10,tripower,0,1,qtDebiased,3.4351994309282325e-10
+tripower_businesstime_10ticks,seconds,BusinessTime,10,tripower,0,1,qtSSDebiased,3.4351994309282325e-10
+quadpower_businesstime_10ticks,seconds,BusinessTime,10,quadpower,0,1,qt,2.7744096362789517e-10
+quadpower_businesstime_10ticks,seconds,BusinessTime,10,quadpower,0,1,qtSS,2.7744096362789517e-10
+quadpower_businesstime_10ticks,seconds,BusinessTime,10,quadpower,0,1,qtDebiased,2.8166595292172101e-10
+quadpower_businesstime_10ticks,seconds,BusinessTime,10,quadpower,0,1,qtSSDebiased,2.8166595292172101e-10
+tripower_businesstime_10ticks_5sub,seconds,BusinessTime,10,tripower,0,5,qt,3.4008474366189502e-10
+tripower_businesstime_10ticks_5sub,seconds,BusinessTime,10,tripower,0,5,qtSS,3.7206353474215564e-10
+tripower_businesstime_10ticks_5sub,seconds,BusinessTime,10,tripower,0,5,qtDebiased,3.4351994309282325e-10
+tripower_businesstime_10ticks_5sub,seconds,BusinessTime,10,tripower,0,5,qtSSDebiased,3.7582175226480365e-10
+quadpower_calendartime_300s_skip1,seconds,CalendarTime,300,quadpower,1,1,qt,2.7904696358918443e-10
+quadpower_calendartime_300s_skip1,seconds,CalendarTime,300,quadpower,1,1,qtSS,2.7904696358918443e-10
+quadpower_calendartime_300s_skip1,seconds,CalendarTime,300,quadpower,1,1,qtDebiased,3.0230087722161646e-10
+quadpower_calendartime_300s_skip1,seconds,CalendarTime,300,quadpower,1,1,qtSSDebiased,3.0230087722161646e-10
+bns_calendartime_300s,seconds,CalendarTime,300,bns,0,1,qt,7.2852369490053071e-10
+bns_calendartime_300s,seconds,CalendarTime,300,bns,0,1,qtSS,7.2852369490053071e-10
+bns_calendartime_300s,seconds,CalendarTime,300,bns,0,1,qtDebiased,7.2852369490053071e-10
+bns_calendartime_300s,seconds,CalendarTime,300,bns,0,1,qtSSDebiased,7.2852369490053071e-10
+bns_businesstime_10ticks,seconds,BusinessTime,10,bns,0,1,qt,4.2614093044220548e-10
+bns_businesstime_10ticks,seconds,BusinessTime,10,bns,0,1,qtSS,4.2614093044220548e-10
+bns_businesstime_10ticks,seconds,BusinessTime,10,bns,0,1,qtDebiased,4.2614093044220548e-10
+bns_businesstime_10ticks,seconds,BusinessTime,10,bns,0,1,qtSSDebiased,4.2614093044220548e-10
