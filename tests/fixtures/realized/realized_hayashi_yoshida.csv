@@ -1,0 +1,5 @@
+scenario,timeType,samplingType,samplingInterval,overlap,nA,nB,hy_covariance
+async_calendartime_300s,seconds,CalendarTime,300,0,2000,1800,5.108039180342963e-06
+synchronous_calendartime_300s,seconds,CalendarTime,300,0,1800,1800,-2.946565492545984e-07
+async_calendartime_300s_overlap1,seconds,CalendarTime,300,1,2000,1800,2.824602331420239e-06
+async_businesstime_10,seconds,BusinessTime,10,0,2000,1800,-1.803328709529595e-06
