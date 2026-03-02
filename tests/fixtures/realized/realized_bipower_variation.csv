@@ -1,0 +1,57 @@
+# realized_bipower_variation fixture data — Octave/MATLAB reference for parity testing
+# Generated from simulated high-frequency price data (rng(42,'twister'), T_hf=2000)
+# Source: realized/realized_bipower_variation.m — Bipower variation estimator (Barndorff-Nielsen & Shephard)
+# Human-readable CSV counterpart of realized_bipower_variation.npy
+# Validation: numpy.testing.assert_allclose(actual, expected, atol=1e-6, rtol=1e-4)
+#
+# Data Source: Simulated HF prices
+#   T_hf = 2000 observations
+#   hf_returns = 0.0001 * randn(T_hf, 1), rng(42,'twister')
+#   hf_prices = 100 * exp(cumsum(hf_returns))
+#   hf_times_seconds = linspace(34200, 57600, T_hf)'  (9:30 to 16:00 in seconds)
+#
+# Function signature:
+#   [bv, bvSS, bvDebiased, bvSSDebiased] = realized_bipower_variation(
+#       price, time, timeType, samplingType, samplingInterval, skip, subsamples)
+#
+# Output descriptions:
+#   bv:            Bipower variation estimate (pi/2 * sum(|r_i|*|r_{i-1-skip}|))
+#   bvSS:          Subsampled bipower variation (averaged across subsample grids)
+#   bvDebiased:    Debiased BV = bv * m / (m - skip - 1), correcting finite-sample bias
+#   bvSSDebiased:  Debiased subsampled BV = bvSS / biasScale
+#
+# Debiasing note:
+#   biasScale = (m - 1 - skip) / m where m = number of returns after filtering.
+#   Skip-k BPV has a small downward bias of order (N-k)/N when no jumps are present.
+#   Ref: realized_bipower_variation.m:49-50
+#
+# Test scenarios:
+#   1. calendartime_300s_skip0:    CalendarTime 300s, skip=0, subsamples=1 — standard BPV
+#   2. calendartime_300s_skip1:    CalendarTime 300s, skip=1, subsamples=1 — skip-1 BPV
+#   3. calendartime_300s_5sub:     CalendarTime 300s, skip=0, subsamples=5 — subsampled BPV
+#   4. businesstime_10ticks:       BusinessTime 10 ticks, skip=0, subsamples=1 — tick-based BPV
+#
+# Notes:
+#   - When subsamples=1, bv and bvSS are identical (no subsample averaging).
+#   - When subsamples=1, bvDebiased and bvSSDebiased are identical.
+#   - skip=0 produces the standard Barndorff-Nielsen & Shephard (2004) BPV estimator.
+#   - skip=1 produces the skip-1 BPV which is robust to certain microstructure effects.
+#   - All values computed with Octave 8.4.0 using MFE Toolbox Version 4.0.
+#
+scenario,timeType,samplingType,samplingInterval,skip,subsamples,output_name,value
+calendartime_300s_skip0,seconds,CalendarTime,300,0,1,bv,1.9454695279204426e-05
+calendartime_300s_skip0,seconds,CalendarTime,300,0,1,bvSS,1.9454695279204426e-05
+calendartime_300s_skip0,seconds,CalendarTime,300,0,1,bvDebiased,1.9707353659453834e-05
+calendartime_300s_skip0,seconds,CalendarTime,300,0,1,bvSSDebiased,1.9707353659453834e-05
+calendartime_300s_skip1,seconds,CalendarTime,300,1,1,bv,2.0726570579294053e-05
+calendartime_300s_skip1,seconds,CalendarTime,300,1,1,bvSS,2.0726570579294053e-05
+calendartime_300s_skip1,seconds,CalendarTime,300,1,1,bvDebiased,2.1272006647170213e-05
+calendartime_300s_skip1,seconds,CalendarTime,300,1,1,bvSSDebiased,2.1272006647170213e-05
+calendartime_300s_5sub,seconds,CalendarTime,300,0,5,bv,1.9454695279204426e-05
+calendartime_300s_5sub,seconds,CalendarTime,300,0,5,bvSS,2.0089089090986450e-05
+calendartime_300s_5sub,seconds,CalendarTime,300,0,5,bvDebiased,1.9707353659453834e-05
+calendartime_300s_5sub,seconds,CalendarTime,300,0,5,bvSSDebiased,2.0349986351908351e-05
+businesstime_10ticks,seconds,BusinessTime,10,0,1,bv,1.8257281878076647e-05
+businesstime_10ticks,seconds,BusinessTime,10,0,1,bvSS,1.8257281878076647e-05
+businesstime_10ticks,seconds,BusinessTime,10,0,1,bvDebiased,1.8349027013142360e-05
+businesstime_10ticks,seconds,BusinessTime,10,0,1,bvSSDebiased,1.8349027013142360e-05
