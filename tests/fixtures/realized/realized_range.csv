@@ -1,0 +1,82 @@
+# realized_range fixture data — Octave/MATLAB reference for parity testing
+# Generated from synthetic high-frequency data: rng(42,'twister'), T_hf=2000,
+#   hf_returns=0.0001*randn(T_hf,1), hf_prices=100*exp(cumsum(hf_returns)),
+#   hf_times_seconds=linspace(34200,57600,T_hf)'
+# Source: realized/realized_range.m — Realized Range estimate of quadratic variation
+# Human-readable CSV counterpart of realized_range.npy
+# Validation: numpy.testing.assert_allclose(actual, expected, atol=1e-6, rtol=1e-4)
+#
+# Data Source: generate_fixtures.m synthetic data
+#   T_hf = 2000 observations
+#   hf_returns ~ N(0, 0.0001^2)
+#   hf_prices: geometric random walk starting at 100
+#   hf_times_seconds: evenly spaced in [34200, 57600] (seconds since midnight, 9:30 AM - 4:00 PM)
+#   RNG state: rng(42,'twister') then epsilon(1000), data_mv(1000x3), then hf_returns(2000)
+#
+# Function signature:
+#   [rr, rrSS] = realized_range(price, time, timeType, samplingType, samplingInterval,
+#                                samplesperbin, overlap, subsamples)
+#
+# Output descriptions:
+#   rr:    Realized range estimate — sum of (hi-lo)^2 / scale per bin, corrected for overlap.
+#          Uses precomputed scaling factors from realized_range_scale (concave regression of
+#          Monte Carlo simulations) to correct the range for bin size.
+#   rrSS:  Subsampled realized range — when overlap=true and subsamples>1, averages RR over
+#          jittered starting points. When overlap=false, rrSS=rr. When subsamples=1, rrSS=rr.
+#
+# Algorithm (from realized_range.m):
+#   1. Log-transform prices: logPrice = log(price)
+#   2. Filter via realized_price_filter to get n sampled log-prices
+#   3. Compute high/low within bins of size samplesperbin:
+#      - Overlap=true: bins = n - samplesperbin, sliding window
+#      - Overlap=false: bins = (n-1)/(samplesperbin-1), non-overlapping blocks
+#   4. range = hi - lo per bin
+#   5. rr = sum(range^2 / scale) / overlapScale
+#   6. scale is interpolated from precomputed Monte Carlo values (concave regression)
+#   7. For subsampled rrSS: average RR over jittered subsample grids from realized_subsample
+#
+# Filtered price counts (CalendarTime 300s: n=79, BusinessTime 10: n=201):
+#   CalendarTime 300s: 79 filtered prices (n-1=78, factors: 1,2,3,6,13,26,39,78)
+#     Valid no-overlap samplesperbin: 2,3,4,7,14,27,40,79
+#   BusinessTime 10: 201 filtered prices (n-1=200, factors: 1,2,4,5,8,10,20,25,40,50,100,200)
+#     Valid no-overlap samplesperbin: 2,3,5,6,9,11,21,26,41,51,101,201
+#
+# Test scenarios:
+#   1. calendartime_300s_spb5_overlap:         CalendarTime 300s, spb=5, overlap=true, subsamples=1
+#   2. calendartime_300s_spb5_overlap_3sub:    CalendarTime 300s, spb=5, overlap=true, subsamples=3
+#   3. calendartime_300s_spb4_nooverlap:       CalendarTime 300s, spb=4, overlap=false, subsamples=1
+#   4. businesstime_10_spb3_overlap:           BusinessTime 10, spb=3, overlap=true, subsamples=1
+#   5. businesstime_10_spb3_overlap_2sub:      BusinessTime 10, spb=3, overlap=true, subsamples=2
+#   6. calendartime_300s_spb7_overlap:         CalendarTime 300s, spb=7, overlap=true, subsamples=1
+#   7. calendartime_300s_spb7_overlap_3sub:    CalendarTime 300s, spb=7, overlap=true, subsamples=3
+#   8. businesstime_10_spb5_nooverlap:         BusinessTime 10, spb=5, overlap=false, subsamples=1
+#
+# Notes:
+#   - When subsamples=1 and overlap=true, the subsample loop still runs once, yielding rrSS=rr.
+#   - When overlap=false, the function returns early with rrSS=rr regardless of subsamples.
+#   - The scale factor corrects for the expected range of a standard Brownian bridge over
+#     samplesperbin discrete samples, computed via concave regression of MC simulations.
+#   - Larger samplesperbin yields smaller scale correction (converges to 4*log(2) asymptotically).
+#   - All values are in the order of 1e-05, consistent with the low-volatility synthetic returns.
+#   - Scenario 2 vs 1: same rr but different rrSS due to subsampled averaging.
+#   - Scenario 3: no-overlap with spb=4 gives (79-1)/(4-1)=26 non-overlapping bins.
+#   - Scenario 8: no-overlap with spb=5 gives (201-1)/(5-1)=50 non-overlapping bins.
+#   - All values generated in GNU Octave 8.4.0 with save_default_options('-v7').
+#
+scenario,timeType,samplingType,samplingInterval,samplesperbin,overlap,subsamples,output_name,value
+calendartime_300s_spb5_overlap,seconds,CalendarTime,300,5,true,1,rr,2.30243558724061372239e-05
+calendartime_300s_spb5_overlap,seconds,CalendarTime,300,5,true,1,rrSS,2.30243558724061372239e-05
+calendartime_300s_spb5_overlap_3sub,seconds,CalendarTime,300,5,true,3,rr,2.30243558724061372239e-05
+calendartime_300s_spb5_overlap_3sub,seconds,CalendarTime,300,5,true,3,rrSS,2.29352074309425802486e-05
+calendartime_300s_spb4_nooverlap,seconds,CalendarTime,300,4,false,1,rr,2.34840998054709835640e-05
+calendartime_300s_spb4_nooverlap,seconds,CalendarTime,300,4,false,1,rrSS,2.34840998054709835640e-05
+businesstime_10_spb3_overlap,seconds,BusinessTime,10,3,true,1,rr,1.95780289199231252836e-05
+businesstime_10_spb3_overlap,seconds,BusinessTime,10,3,true,1,rrSS,1.95780289199231252836e-05
+businesstime_10_spb3_overlap_2sub,seconds,BusinessTime,10,3,true,2,rr,1.95780289199231252836e-05
+businesstime_10_spb3_overlap_2sub,seconds,BusinessTime,10,3,true,2,rrSS,2.08630598255995422508e-05
+calendartime_300s_spb7_overlap,seconds,CalendarTime,300,7,true,1,rr,2.26940557436182783417e-05
+calendartime_300s_spb7_overlap,seconds,CalendarTime,300,7,true,1,rrSS,2.26940557436182783417e-05
+calendartime_300s_spb7_overlap_3sub,seconds,CalendarTime,300,7,true,3,rr,2.26940557436182783417e-05
+calendartime_300s_spb7_overlap_3sub,seconds,CalendarTime,300,7,true,3,rrSS,2.29278975925854522865e-05
+businesstime_10_spb5_nooverlap,seconds,BusinessTime,10,5,false,1,rr,2.05695173207776112862e-05
+businesstime_10_spb5_nooverlap,seconds,BusinessTime,10,5,false,1,rrSS,2.05695173207776112862e-05
