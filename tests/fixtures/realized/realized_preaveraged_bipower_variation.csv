@@ -1,0 +1,67 @@
+# realized_preaveraged_bipower_variation fixture data — Octave/MATLAB reference for parity testing
+# Generated from synthetic high-frequency data: rng(42,'twister'), T_hf=2000,
+#   hf_returns=0.0001*randn(T_hf,1), hf_prices=100*exp(cumsum(hf_returns)),
+#   hf_times_seconds=linspace(34200,57600,T_hf)'
+# Source: realized/realized_preaveraged_bipower_variation.m — Pre-averaged Bipower Variation
+#   (Christensen, Oomen and Podolski, 2014; noise variance from Hautsch and Podolski, 2013)
+# Human-readable CSV counterpart of realized_preaveraged_bipower_variation.npy
+# Validation: numpy.testing.assert_allclose(actual, expected, atol=1e-6, rtol=1e-4)
+#
+# Data Source: generate_fixtures.m synthetic data
+#   T_hf = 2000 observations
+#   hf_returns ~ N(0, 0.0001^2)
+#   hf_prices: geometric random walk starting at 100
+#   hf_times_seconds: evenly spaced in [34200, 57600] (seconds since midnight, 9:30 AM - 4:00 PM)
+#   RNG state: rng(42,'twister') then epsilon(1000), data_mv(1000x3), then hf_returns(2000)
+#
+# Function signature:
+#   [rpbv] = realized_preaveraged_bipower_variation(
+#       price, time, timeType, samplingType, samplingInterval, options)
+#
+# Output descriptions:
+#   rpbv: Pre-averaged bipower variation estimate — a jump-robust measure of integrated variance
+#         that combines pre-averaging (to handle market microstructure noise) with bipower
+#         variation (to achieve robustness to price jumps).
+#
+# Algorithm summary (Ref: realized_preaveraged_bipower_variation.m):
+#   1. Filter prices via realized_price_filter using the specified sampling scheme
+#   2. Compute log-returns: returns = diff(log(filteredPrice))
+#   3. Set pre-averaging window K = ceil(theta * sqrt(m)) with weight g(x)=min(x,1-x)
+#   4. Compute pre-averaged returns: weighted sum of returns in sliding window
+#   5. Compute constants psi_1, psi_2 from the weight function g
+#   6. Estimate noise variance via realized_noise_estimate (Oomen estimator preferred)
+#   7. Compute bipower variation: const1*const2*sum(|lead.*lag|) - bias
+#      where bias = psi_1/(theta^2*psi_2) * omega^2, mu_1 = sqrt(2/pi)
+#
+# Default options (realized_options('preaveraging')):
+#   theta = 1.0  (pre-averaging window parameter)
+#   medFrequencySamplingType = 'BusinessUniform'
+#   medFrequencySamplingInterval = 390
+#   medFrequencyKernel = 'parzen'
+#   medFrequencyBandwidth = 5
+#   noiseVarianceSamplingType = 'BusinessTime'
+#   noiseVarianceSamplingInterval = 1
+#   IQEstimationSamplingType = 'BusinessUniform'
+#   IQEstimationSamplingInterval = 39
+#
+# Test scenarios:
+#   1. calendartime_300s:  CalendarTime 300s, seconds, default options (theta=1.0)
+#   2. businesstime_10ticks: BusinessTime 10 ticks, seconds, default options (theta=1.0)
+#   3. calendartime_600s:  CalendarTime 600s, seconds, default options (theta=1.0) — coarser sampling
+#   4. custom_theta_0p5:   CalendarTime 300s, seconds, custom options with theta=0.5
+#   5. price_only:         Price-only input (default BusinessTime 1 tick, seconds, theta=1.0)
+#
+# Notes:
+#   - The pre-averaged BPV is jump-robust and noise-robust by construction.
+#   - All values are in the order of 1e-05, consistent with the low-volatility synthetic returns.
+#   - The 'price_only' scenario uses default parameters: BusinessTime with interval=1, seconds time type,
+#     and times spanning [9.5*3600, 16*3600] i.e. [34200, 57600] (same range as hf_times_seconds).
+#   - The 'custom_theta_0p5' scenario reduces the pre-averaging window, affecting the bias correction.
+#   - CalendarTime 600s produces a coarser grid with fewer returns, generally increasing rpbv.
+#
+scenario,timeType,samplingType,samplingInterval,options_theta,output_name,value
+calendartime_300s,seconds,CalendarTime,300,1.0,rpbv,2.94247945412701911e-05
+businesstime_10ticks,seconds,BusinessTime,10,1.0,rpbv,2.30014086112164454e-05
+calendartime_600s,seconds,CalendarTime,600,1.0,rpbv,3.36684384168874803e-05
+custom_theta_0p5,seconds,CalendarTime,300,0.5,rpbv,2.15047322719471395e-05
+price_only,seconds,BusinessTime,1,1.0,rpbv,2.16056923892030371e-05
