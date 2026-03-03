@@ -90,6 +90,10 @@ def load_fixture_npy(fixture_dir: Path, name: str) -> np.ndarray:
     path: Path = fixture_dir / f"{name}.npy"
     if not path.exists():
         pytest.skip(f"Fixture file not found: {path}")
+    # allow_pickle is required because project-generated fixture .npy files use
+    # object-dtype arrays containing dicts of test cases.  These files are
+    # committed to the repository and are NOT user-supplied, so the
+    # deserialization risk (CWE-502) does not apply here.
     return np.load(path, allow_pickle=True)
 
 

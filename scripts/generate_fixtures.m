@@ -36,6 +36,15 @@
 %  ========================================================================
 clear all; close all; clc;
 
+% Force MATLAB v7 format for Octave compatibility with scipy.io.loadmat.
+% Octave defaults to HDF5 (v5) format which scipy.io.loadmat cannot read.
+% This ensures all save() calls produce MATLAB v7 .mat files.
+try
+    save_default_options('-v7');
+catch
+    % MATLAB ignores this (uses v7 by default); only needed for Octave
+end
+
 % Set random seed for reproducibility (Octave-compatible)
 try
     rng(42, 'twister');

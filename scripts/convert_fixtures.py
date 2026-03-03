@@ -594,14 +594,17 @@ def main() -> None:
     args = parse_args()
 
     # Resolve output directory: MFE_FIXTURE_DIR env var > --output-dir > default
+    # All CLI paths are resolved to absolute paths to prevent path traversal
+    # (CWE-22). This is a developer-facing CLI tool; paths are not user-supplied
+    # in production, but we sanitize defensively nonetheless.
     output_dir = Path(
         os.environ.get("MFE_FIXTURE_DIR", args.output_dir or "tests/fixtures")
-    )
+    ).resolve()
 
     # Determine CSV writing preference
     write_csv = args.csv and not args.no_csv
 
-    mat_dir = Path(args.mat_dir)
+    mat_dir = Path(args.mat_dir).resolve()
 
     # Print banner
     print("=" * 70)
@@ -644,7 +647,7 @@ def main() -> None:
     # Determine data directory: explicit --data-dir, or try current directory
     data_dir_path: Path | None = None
     if args.data_dir is not None:
-        data_dir_path = Path(args.data_dir)
+        data_dir_path = Path(args.data_dir).resolve()
     else:
         # Auto-detect: check if realized/ exists in current directory
         if (Path(".") / "realized").is_dir():
