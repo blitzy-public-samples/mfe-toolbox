@@ -16,8 +16,10 @@ Three model parameterisations are handled:
     * **Diagonal** (type_model=3) — K-element vector constraint:
       ``diag(sum(A_i^2, i=1..p) + sum(B_j^2, j=1..q)) < 0.99998``
 
-All constraints follow the ``scipy.optimize`` convention ``c <= 0`` for
-inequality constraints.  Equality constraints are always empty.
+All constraints follow the ``scipy.optimize`` convention ``c >= 0`` for
+inequality constraints (feasible when non-negative).  Values are therefore
+**negated** relative to the MATLAB source (where ``fmincon`` uses ``c <= 0``).
+Equality constraints are always empty.
 
 Source Reference
 ----------------
@@ -90,7 +92,8 @@ def rarch_constraint(
     Returns
     -------
     c : numpy.ndarray
-        Inequality constraint vector (scipy convention: ``c <= 0``).
+        Inequality constraint vector (scipy convention: ``c >= 0`` = feasible).
+        All values are **negated** relative to the MATLAB source.
 
         * Scalar (type_model=1): 1-element array.
         * CP (type_model=2): k-element array.
@@ -124,8 +127,8 @@ def rarch_constraint(
     >>> # Scalar RARCH(1,1) with k=3 assets
     >>> params = np.array([0.3, 0.6])  # a, b parameters
     >>> c, ceq = rarch_constraint(params, p=1, q=1, k=3, type_model=1)
-    >>> c  # sum(a^2) + sum(b^2) - 0.99998 should be < 0
-    array([-0.54998])
+    >>> c  # 0.99998 - sum(a^2) - sum(b^2) should be >= 0 for feasibility
+    array([0.54998])
     >>> ceq.size == 0
     True
     """
@@ -194,7 +197,8 @@ def rarch_constraint(
         constraint = np.diag(A_sq_sum + B_sq_sum - 0.99998)  # k-vector
         # Ref: rarch_constraint.m:28 — MATLAB uses constraint(1) (1-indexed)
         # Python 0-indexed equivalent: constraint[0]
-        c = np.array([constraint[0]])
+        # Negate for scipy convention: MATLAB c <= 0 → scipy c >= 0
+        c = -np.array([constraint[0]])
 
     elif type_model == 2:
         # ------------------------------------------------------------------
@@ -209,7 +213,8 @@ def rarch_constraint(
         # Ref: rarch_constraint.m:30 — parameters(end) maps to parameters[-1]
         theta = parameters[-1] ** 2
         A_sq_sum = np.sum(A ** 2, axis=2)  # (k, k)
-        c = np.diag(A_sq_sum) - theta  # k-vector; each entry <= 0
+        # Negate for scipy convention: MATLAB c <= 0 → scipy c >= 0
+        c = -(np.diag(A_sq_sum) - theta)  # k-vector; each entry >= 0 when feasible
 
     elif type_model == 3:
         # ------------------------------------------------------------------
@@ -222,6 +227,7 @@ def rarch_constraint(
         A_sq_sum = np.sum(A ** 2, axis=2)  # (k, k)
         B_sq_sum = np.sum(B ** 2, axis=2)  # (k, k)
         constraint = np.diag(A_sq_sum + B_sq_sum - 0.99998)  # k-vector
-        c = constraint
+        # Negate for scipy convention: MATLAB c <= 0 → scipy c >= 0
+        c = -constraint
 
     return c, ceq

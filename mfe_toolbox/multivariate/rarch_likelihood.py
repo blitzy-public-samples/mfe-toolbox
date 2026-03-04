@@ -52,7 +52,7 @@ def rarch_likelihood(
     back_cast: np.ndarray,
     type_model: int,
     is_joint: bool = False,
-    compute_scores: bool = False,
+    is_c_chol: bool = False,
 ) -> tuple[float, np.ndarray, np.ndarray]:
     """
     Evaluate the negative log-likelihood for a RARCH(p,q) model.
@@ -92,15 +92,16 @@ def rarch_likelihood(
     is_joint : bool, optional
         If True the parameter vector contains both the covariance intercept
         and dynamics parameters.  Default is False.
-    compute_scores : bool, optional
-        Passed through to :func:`rarch_parameter_transform` as the Cholesky
-        parameterisation flag (``is_c_chol``).  When True **and**
+    is_c_chol : bool, optional
+        Cholesky parameterisation flag passed through to
+        :func:`rarch_parameter_transform`.  When True **and**
         ``is_joint`` is True, the intercept portion of the parameter vector
-        is interpreted as a Cholesky factor of C.  Default is False.
+        is interpreted as the Cholesky factor of C rather than ``vech(C)``.
+        Default is False.
 
         .. note::
-           This parameter corresponds to ``isCChol`` in the original MATLAB
-           source (``rarch_likelihood.m:1``).
+           Corresponds to ``isCChol`` in the original MATLAB source
+           (``rarch_likelihood.m:1``).
 
     Returns
     -------
@@ -163,10 +164,10 @@ def rarch_likelihood(
     # ------------------------------------------------------------------
     # Transform parameter vector into C, A, B matrices
     # Ref: rarch_likelihood.m:38
-    # The 8th argument maps MATLAB's isCChol to compute_scores
+    # The 8th argument maps MATLAB's isCChol to is_c_chol
     # ------------------------------------------------------------------
     C_mat, A, B = rarch_parameter_transform(
-        parameters, p, q, k, C, type_model, is_joint, compute_scores
+        parameters, p, q, k, C, type_model, is_joint, is_c_chol
     )
 
     # ------------------------------------------------------------------

@@ -1,9 +1,11 @@
 """
 Non-linear constraint for BEKK(p, o, q) multivariate volatility model estimation.
 
-Computes the stationarity inequality constraint ``c <= 0`` that ensures the BEKK
-model's conditional covariance process is covariance-stationary.  The constraint
-form depends on the parameterisation type:
+Computes the stationarity inequality constraint in scipy convention
+(``c >= 0`` = feasible) that ensures the BEKK model's conditional covariance
+process is covariance-stationary.  Constraint values are **negated** relative
+to the MATLAB source (where ``fmincon`` uses ``c <= 0``).  The constraint form
+depends on the parameterisation type:
 
     * Type 1 -- **Scalar**: sum of squared scalar parameters < 1.
     * Type 2 -- **Diagonal**: diagonal persistence < 1 for each asset.
@@ -25,11 +27,11 @@ Translation decisions
     - MATLAB ``abs(eig(m))`` -> ``np.abs(np.linalg.eigvals(m))``.
     - MATLAB ``type`` parameter renamed to ``type_model`` to avoid shadowing
       the Python built-in ``type``.
-    - Constraint convention: both MATLAB ``fmincon`` and scipy ``SLSQP`` use
-      ``c <= 0`` for inequality constraints.  The caller (``bekk.py``) must
-      adapt sign convention if using scipy's ``{'type': 'ineq', ...}`` format
-      (which requires the constraint function to return values >= 0 for
-      feasibility).
+    - Constraint convention: MATLAB ``fmincon`` uses ``c <= 0`` for inequality
+      constraints, while scipy ``{'type': 'ineq'}`` requires ``f(x) >= 0`` for
+      feasibility.  All constraint values are therefore **negated** relative to
+      the MATLAB source to match the scipy convention, consistent with
+      ``rcc_constraint.py``.
 
 See Also
 --------
@@ -87,7 +89,8 @@ def bekk_constraint(parameters, data, data_asym, p, o, q, back_cast,
     Returns
     -------
     c : numpy.ndarray
-        Inequality constraint vector.  Feasible when every element <= 0.
+        Inequality constraint vector (scipy convention: ``c >= 0`` = feasible).
+        All values are **negated** relative to the MATLAB source.
         Shape depends on *type_model*:
 
         * Scalar  (1): shape ``(1,)``  -- single stationarity bound.
@@ -103,16 +106,17 @@ def bekk_constraint(parameters, data, data_asym, p, o, q, back_cast,
 
     Notes
     -----
-    The constraint ``c <= 0`` encodes the spectral-radius condition for
-    covariance stationarity of the BEKK process:
+    The constraints encode the spectral-radius condition for covariance
+    stationarity of the BEKK process (in scipy convention, ``c >= 0`` =
+    feasible):
 
     - **Scalar**:
-      ``sum_j(a_j^2) + sum_j(b_j^2) + 0.5 * sum_j(g_j^2) - 1 <= 0``
+      ``1 - sum_j(a_j^2) - sum_j(b_j^2) - 0.5 * sum_j(g_j^2) >= 0``
     - **Diagonal**:
-      ``diag(sum_j A_j^2 + sum_j B_j^2 + 0.5 * sum_j G_j^2) - 1 <= 0``
+      ``1 - diag(sum_j A_j^2 + sum_j B_j^2 + 0.5 * sum_j G_j^2) >= 0``
       element-wise for each of the K assets.
     - **Full**:
-      ``|lambda_i(M)| - 0.99998 <= 0`` for every eigenvalue lambda_i of the
+      ``0.99998 - |lambda_i(M)| >= 0`` for every eigenvalue lambda_i of the
       K^2 x K^2 persistence matrix
       ``M = sum_j kron(A_j, A_j) + 0.5 sum_j kron(G_j, G_j) + sum_j kron(B_j, B_j)``.
 
@@ -166,8 +170,8 @@ def bekk_constraint(parameters, data, data_asym, p, o, q, back_cast,
                     + np.sum(B[0, 0, :] ** 2)
                     + 0.5 * np.sum(G[0, 0, :] ** 2)
                     - 1.0)
-        # Wrap scalar into a 1-D array for a consistent return type
-        c = np.atleast_1d(np.asarray(c_scalar, dtype=np.float64))
+        # Negate for scipy convention: MATLAB c <= 0 → scipy c >= 0
+        c = -np.atleast_1d(np.asarray(c_scalar, dtype=np.float64))
 
     elif type_model == 2:
         # Ref: bekk_constraint.m:31-32 -- Diagonal BEKK stationarity constraint
@@ -181,7 +185,8 @@ def bekk_constraint(parameters, data, data_asym, p, o, q, back_cast,
                               + np.sum(B ** 2, axis=2)
                               + 0.5 * np.sum(G ** 2, axis=2)
                               - 1.0)
-        c = np.diag(persistence_matrix)
+        # Negate for scipy convention: MATLAB c <= 0 → scipy c >= 0
+        c = -np.diag(persistence_matrix)
 
     elif type_model == 3:
         # Ref: bekk_constraint.m:33-44 -- Full BEKK stationarity constraint
@@ -206,7 +211,8 @@ def bekk_constraint(parameters, data, data_asym, p, o, q, back_cast,
 
         # Ref: bekk_constraint.m:44 -- eigenvalue magnitude constraint
         # MATLAB: c = abs(eig(m)) - .99998
-        c = np.abs(np.linalg.eigvals(m)) - 0.99998
+        # Negate for scipy convention: MATLAB c <= 0 → scipy c >= 0
+        c = -(np.abs(np.linalg.eigvals(m)) - 0.99998)
 
     else:
         raise ValueError(
