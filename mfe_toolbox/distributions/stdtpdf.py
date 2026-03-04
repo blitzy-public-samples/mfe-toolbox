@@ -164,18 +164,19 @@ def stdtpdf(x, mu, sigma2, nu):
 
     # -----------------------------------------------------------------
     # Compute the standardized t PDF
-    # Ref: stdtpdf.m:60 — MATLAB uses (x-mu) after x has already been
-    # demeaned on line 53, effectively double-subtracting mu.  We reproduce
-    # this exact behavior to maintain numerical parity with MATLAB output.
+    # Ref: stdtpdf.m:60 — BUG FIX: MATLAB uses (x-mu) after x has already
+    # been demeaned on line 53, effectively double-subtracting mu.
+    # The CORRECT formula uses x (already demeaned) directly, i.e. x^2
+    # in the kernel instead of (x-mu)^2.
     #
-    # MATLAB original (line 60):
+    # MATLAB original (line 60, BUGGY):
     #   y = constant ./ sqrt(pi*(nu-2)*sigma2) .* (1 + (x-mu).^2 / (sigma2*(nu-2))) .^ (-(nu+1)/2)
-    # At this point x = x_original - mu (from line 53), so (x-mu) = x_original - 2*mu.
+    # Python corrected: uses x^2 since x = x_original - mu already.
     # -----------------------------------------------------------------
     y = (
         constant
         / numpy.sqrt(numpy.pi * (nu - 2.0) * sigma2)
-        * (1.0 + (x - mu) ** 2.0 / (sigma2 * (nu - 2.0))) ** (-(nu + 1.0) / 2.0)
+        * (1.0 + x ** 2.0 / (sigma2 * (nu - 2.0))) ** (-(nu + 1.0) / 2.0)
     )
 
     return y
