@@ -460,7 +460,7 @@ def _fit_single_tarch(epsilon, p_i, o_i, q_i, tarch_type_i, starting_vals=None):
             args=(epsilon_augmented, fepsilon, fIepsilon, p_i, o_i, q_i,
                   tarch_type_i, back_cast, T),
             method='L-BFGS-B',
-            options={'maxiter': 500, 'maxfun': 1000, 'disp': False,
+            options={'maxiter': 500, 'maxfun': 1000,
                      'ftol': 1e-8, 'gtol': 1e-6}
         )
         opt_params = result.x
@@ -484,7 +484,7 @@ def _fit_single_tarch(epsilon, p_i, o_i, q_i, tarch_type_i, starting_vals=None):
                     args=(epsilon_augmented, fepsilon, fIepsilon, p_i, o_i, q_i,
                           tarch_type_i, back_cast, T),
                     method='L-BFGS-B',
-                    options={'maxiter': 500, 'maxfun': 1000, 'disp': False}
+                    options={'maxiter': 500, 'maxfun': 1000}
                 )
                 if alt_result.fun < best_ll:
                     best_ll = alt_result.fun

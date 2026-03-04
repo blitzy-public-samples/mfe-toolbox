@@ -77,13 +77,22 @@ class TestKolmogorovUnit:
         # (not a hard guarantee, but with seed=42 this is deterministic)
         assert H is False or isinstance(H, (bool, np.bool_))
 
-    def test_kolmogorov_non_uniform_data(self, rng: np.random.Generator) -> None:
+    def test_kolmogorov_non_uniform_data(self) -> None:
         """Non-uniform (Beta(0.5,0.5)) data tested as PIT should reject.
 
         Beta(0.5,0.5) has a U-shaped density on (0,1) — very different from
         uniform, so the KS test should reject.
+
+        Uses a locally-scoped RNG (seed=12345) to avoid test-order dependence
+        caused by the session-scoped ``rng`` fixture advancing its state as
+        prior tests consume random numbers.
         """
-        x = np.clip(rng.beta(0.5, 0.5, 200), 0.001, 0.999)
+        # Local RNG to ensure deterministic behavior regardless of test
+        # execution order.  The session-scoped rng fixture is intentionally
+        # NOT used here because its state depends on how many prior tests
+        # have drawn from it.
+        rng_local = np.random.default_rng(12345)
+        x = np.clip(rng_local.beta(0.5, 0.5, 500), 0.001, 0.999)
         stat, pval, H = kolmogorov(x, alpha=0.05)
 
         assert stat >= 0.0
