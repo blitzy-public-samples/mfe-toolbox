@@ -154,14 +154,6 @@ def figarch(
     if back_cast == 0:
         back_cast = np.var(epsilon, ddof=1)
 
-    # Ref: figarch.m:101-102 — Augmented squared epsilon with backcast
-    # epsilon2Augmented = [zeros(truncLag,1); epsilon.^2]
-    # epsilon2Augmented(1:truncLag) = backCast
-    epsilon2_augmented = np.concatenate([
-        np.full(trunc_lag, back_cast),
-        epsilon ** 2,
-    ])
-
     # ================================================================
     # Starting values
     # Ref: figarch.m:110-125
@@ -173,8 +165,10 @@ def figarch(
         starting_flag = 1
 
     # Ref: figarch.m:116 — Grid search for starting values
-    sv, nu, lam, LLs, ordered_parameters = figarch_starting_values(
-        startingvals, epsilon, epsilon2_augmented, p, q, error_type_int, trunc_lag
+    # Python API: figarch_starting_values(startingvals, epsilon, p, q,
+    #     error_type, truncLag, back_cast, T)
+    sv, nu, lam = figarch_starting_values(
+        startingvals, epsilon, p, q, error_type_int, trunc_lag, back_cast, T
     )
 
     # Ref: figarch.m:118 — startingvals = [startingvals; nu; lambda]
@@ -205,9 +199,11 @@ def figarch(
     # Ref: figarch.m:130-133
     # ================================================================
     # Ref: figarch.m:130 — LL0 = initial likelihood for convergence check
+    # Python API: figarch_likelihood(parameters, epsilon, p, q, error_type,
+    #     truncLag, back_cast, T, estim_flag)
     LL0 = figarch_likelihood(
-        sv_transformed, p, q, epsilon, epsilon2_augmented,
-        trunc_lag, error_type_int, True
+        sv_transformed, epsilon, p, q, error_type_int,
+        trunc_lag, back_cast, T, True
     )[0]
 
     # Ref: figarch.m:133 — fminunc → scipy.optimize.minimize(method='L-BFGS-B')
@@ -215,8 +211,8 @@ def figarch(
     # are already transformed. scipy equivalent is L-BFGS-B (quasi-Newton).
     def _objective(params):
         return figarch_likelihood(
-            params, p, q, epsilon, epsilon2_augmented,
-            trunc_lag, error_type_int, True
+            params, epsilon, p, q, error_type_int,
+            trunc_lag, back_cast, T, True
         )[0]
 
     result = minimize(
@@ -246,32 +242,29 @@ def figarch(
     # ================================================================
     # Estimation Robustness — try alternative starting values
     # Ref: figarch.m:164-209
+    # When grid search was used and primary optimization did not converge,
+    # attempt optimization from perturbed starting values.
     # ================================================================
-    if starting_flag == 0 and exitflag <= 0 and ordered_parameters.size > 0:
+    if starting_flag == 0 and exitflag <= 0:
         # Ref: figarch.m:167-169 — track robust parameter estimates
         robust_parameters = [parameters.copy()]
         robust_LL = [LL]
 
         # Ref: figarch.m:173-203 — iterate over alternative starting values
-        max_retries = min(ordered_parameters.shape[0], 10)
-        index = 1
+        # Generate alternative starting points by perturbing the best grid
+        # search result with small random offsets.
+        max_retries = 10
+        rng_retry = np.random.default_rng(0)
+        index = 0
         while exitflag <= 0 and index < max_retries:
-            # Ref: figarch.m:178-182 — try next best starting values
-            alt_sv = ordered_parameters[index, :].copy()
-            alt_parts = [alt_sv]
-            if nu is not None:
-                alt_parts.append(np.array([nu]))
-            if lam is not None:
-                alt_parts.append(np.array([lam]))
-            alt_full = np.concatenate(alt_parts)
-
-            # Ref: figarch.m:180 — transform alternative starting values
-            alt_transformed = figarch_transform(alt_full, p, q, error_type_int)
+            # Perturb the current best transformed parameters by a small amount
+            perturbation = rng_retry.standard_normal(len(sv_transformed)) * 0.1
+            alt_transformed = sv_transformed + perturbation
 
             # Ref: figarch.m:184 — evaluate initial likelihood
             alt_LL0 = figarch_likelihood(
-                alt_transformed, p, q, epsilon, epsilon2_augmented,
-                trunc_lag, error_type_int, True
+                alt_transformed, epsilon, p, q, error_type_int,
+                trunc_lag, back_cast, T, True
             )[0]
 
             # Ref: figarch.m:187 — optimize with alternative starting values
@@ -334,8 +327,8 @@ def figarch(
     # Ref: figarch.m:216-219
     # ================================================================
     LL_final, likelihoods, ht = figarch_likelihood(
-        parameters, p, q, epsilon, epsilon2_augmented,
-        trunc_lag, error_type_int, False
+        parameters, epsilon, p, q, error_type_int,
+        trunc_lag, back_cast, T, False
     )
     # Ref: figarch.m:218 — LL = -LL (convert from negative to positive)
     LL = -LL_final
@@ -351,8 +344,8 @@ def figarch(
     # Define the objective for Hessian computation (using constrained params)
     def _ll_for_hessian(params):
         return figarch_likelihood(
-            params, p, q, epsilon, epsilon2_augmented,
-            trunc_lag, error_type_int, False
+            params, epsilon, p, q, error_type_int,
+            trunc_lag, back_cast, T, False
         )[0]
 
     # Ref: figarch.m:224 — Hessian computation
@@ -367,21 +360,21 @@ def figarch(
         step_size = np.maximum(np.abs(parameters) * 1e-5, 1e-8)
         scores = np.zeros((num_params, T))
         _, base_lls, _ = figarch_likelihood(
-            parameters, p, q, epsilon, epsilon2_augmented,
-            trunc_lag, error_type_int, False
+            parameters, epsilon, p, q, error_type_int,
+            trunc_lag, back_cast, T, False
         )
         for i in range(num_params):
             params_plus = parameters.copy()
             params_plus[i] += step_size[i]
             _, lls_plus, _ = figarch_likelihood(
-                params_plus, p, q, epsilon, epsilon2_augmented,
-                trunc_lag, error_type_int, False
+                params_plus, epsilon, p, q, error_type_int,
+                trunc_lag, back_cast, T, False
             )
             params_minus = parameters.copy()
             params_minus[i] -= step_size[i]
             _, lls_minus, _ = figarch_likelihood(
-                params_minus, p, q, epsilon, epsilon2_augmented,
-                trunc_lag, error_type_int, False
+                params_minus, epsilon, p, q, error_type_int,
+                trunc_lag, back_cast, T, False
             )
             # Two-sided numerical gradient of per-observation log-likelihoods
             scores[i, :] = (lls_plus - lls_minus) / (2.0 * step_size[i])
