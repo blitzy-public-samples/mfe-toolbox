@@ -172,6 +172,35 @@ def sarimax_errors(
     parameters = np.concatenate([parameters[:m], arma_parameters])
 
     # ------------------------------------------------------------------
+    # Burn-in padding: the MATLAB original relies on pre-padded data from
+    # the caller (armaxfilter.m) so that AR/MA lags never index before the
+    # array start.  In a standalone call the MATLAB MEX would read
+    # uninitialized memory (undefined behaviour in C).  To achieve
+    # correct zero-initial-condition semantics — matching the MATLAB
+    # fixture reference outputs — we pre-pad y, x, and sigma with zeros
+    # (ones for sigma) when the maximum lag exceeds the burn-in index m.
+    # Ref: sarimax_errors.m:35 + mex_source/armaxerrors.c:40-65
+    # ------------------------------------------------------------------
+    max_lag: int = 0
+    if len(p_new) > 0:
+        max_lag = max(max_lag, int(np.max(p_new)))
+    if len(q_new) > 0:
+        max_lag = max(max_lag, int(np.max(q_new)))
+
+    T_orig: int = y.shape[0]
+    burn: int = m  # start with exogenous-column count
+
+    if max_lag > burn:
+        pad = max_lag - burn
+        y = np.concatenate([np.zeros(pad), y])
+        sigma = np.concatenate([np.ones(pad), sigma])
+        if x.shape[1] > 0:
+            x = np.vstack([np.zeros((pad, x.shape[1])), x])
+        else:
+            x = np.empty((y.shape[0], 0))
+        burn = max_lag
+
+    # ------------------------------------------------------------------
     # Ref: sarimax_errors.m:35 —
     #   e = armaxerrors(parameters, p, q, constant, y, x, m, sigma)
     #
@@ -180,7 +209,11 @@ def sarimax_errors(
     # expanded nonseasonal lag structure.
     # ------------------------------------------------------------------
     e: np.ndarray = armaxerrors(
-        parameters, p_new, q_new, constant, y, x, m, sigma
+        parameters, p_new, q_new, constant, y, x, burn, sigma
     )
+
+    # Trim the padded prefix so the returned array matches T_orig
+    if e.shape[0] > T_orig:
+        e = e[e.shape[0] - T_orig:]
 
     return e
