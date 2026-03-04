@@ -207,20 +207,20 @@ def realized_variance(
     # Ref: realized_variance.m:87 — Cast to double (protect against ints)
     # Already handled by np.asarray(..., dtype=np.float64) above.
 
-    # Ref: realized_variance.m:89-92 — Validate timeType
-    time_type_lower = time_type.lower()
-    if time_type_lower not in ('wall', 'seconds', 'unit'):
+    # Ref: realized_variance.m:89 — timeType=lower(timeType)
+    time_type = time_type.lower()
+    if time_type not in ('wall', 'seconds', 'unit'):
         raise ValueError(
             "TIMETYPE must be one of 'wall', 'seconds' or 'unit'."
         )
 
-    # Ref: realized_variance.m:93-96 — Validate samplingType
-    sampling_type_lower = sampling_type.lower()
+    # Ref: realized_variance.m:93 — samplingType=lower(samplingType)
+    sampling_type = sampling_type.lower()
     _valid_sampling = (
         'calendartime', 'calendaruniform',
         'businesstime', 'businessuniform', 'fixed',
     )
-    if sampling_type_lower not in _valid_sampling:
+    if sampling_type not in _valid_sampling:
         raise ValueError(
             "SAMPLINGTYPE must be one of 'CalendarTime', "
             "'CalendarUniform', 'BusinessTime', "
@@ -232,9 +232,9 @@ def realized_variance(
     tT = time[-1]
 
     # Ref: realized_variance.m:101-122 — Validate samplingInterval
-    if sampling_type_lower in ('calendartime', 'calendaruniform',
-                                'businesstime', 'businessuniform'):
-        if time_type_lower in ('wall', 'seconds'):
+    if sampling_type in ('calendartime', 'calendaruniform',
+                         'businesstime', 'businessuniform'):
+        if time_type in ('wall', 'seconds'):
             # Ref: realized_variance.m:103-106 — positive scalar integer
             if (not np.isscalar(sampling_interval)
                     or np.floor(float(sampling_interval)) != float(sampling_interval)
@@ -269,11 +269,13 @@ def realized_variance(
             )
 
     # Ref: realized_variance.m:124-132 — Validate subsamples
+    # MATLAB allows subsamples >= 0 through validation but 0 causes
+    # a runtime error (undefined baseCount).  Python catches this early.
     if subsamples is None:
         subsamples = 1
     subsamples = int(subsamples)
     if subsamples < 1:
-        raise ValueError('SUBSAMPLES must be a non-negative scalar.')
+        raise ValueError('SUBSAMPLES must be a positive integer scalar.')
 
     # ==================================================================
     # Core Computation
