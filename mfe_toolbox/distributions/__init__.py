@@ -1,88 +1,108 @@
 """
-MFE Toolbox distributions subpackage — statistical distribution functions.
+Statistical distribution functions for the MFE Toolbox.
 
-Provides probability density functions (PDF), cumulative distribution functions
-(CDF), inverse CDF (quantile) functions, log-likelihood evaluators, and random
-variate generators for the following distribution families:
+Provides GED, standardized Student's t, skewed Student's t (Hansen 1994),
+normal, multivariate normal distributions with PDF, CDF, quantile,
+log-likelihood, and random variate generation, plus composite likelihood
+and shape compatibility validation.
 
-- **Generalized Error Distribution (GED)**: gedcdf, gedinv, gedpdf, gedloglik, gedrnd
-- **Standardized Student's t**: stdtcdf, stdtinv, stdtpdf, stdtloglik, stdtrnd
-- **Hansen's Skewed Student's t**: skewtcdf, skewtinv, skewtpdf, skewtloglik, skewtrnd
-- **Normal / Multivariate Normal**: normloglik, mvnormloglik
-- **Composite Likelihood**: composite_likelihood (Numba JIT-accelerated)
-- **Shape Compatibility**: iscompatible (broadcasting validation)
+Distribution Families
+---------------------
+**Generalized Error Distribution (GED)**
+    gedcdf, gedinv, gedloglik, gedpdf, gedrnd
 
-All 19 public functions are re-exported here for convenient access via
-``from mfe_toolbox.distributions import gedcdf, stdtpdf`` etc.
+**Standardized Student's t** (unit variance)
+    stdtcdf, stdtinv, stdtloglik, stdtpdf, stdtrnd
 
-Per AAP Section 0.4.1: 1:1 migration from distributions/*.m (19 modules).
+**Hansen's (1994) Skewed Student's t**
+    skewtcdf, skewtinv, skewtloglik, skewtpdf, skewtrnd
+
+**Normal / Multivariate Normal**
+    normloglik, mvnormloglik
+
+**Composite Likelihood** (Numba JIT-accelerated pairwise bivariate evaluator)
+    composite_likelihood
+
+**Shape Compatibility**
+    iscompatible
+
+All 19 public functions are re-exported here for convenient access::
+
+    from mfe_toolbox.distributions import gedcdf, stdtpdf, composite_likelihood
+
+Migrated from: distributions/*.m (19 MATLAB modules, MFE Toolbox Version 4.0)
 """
 
 # ---------------------------------------------------------------------------
-# GED (Generalized Error Distribution)
-# ---------------------------------------------------------------------------
-from mfe_toolbox.distributions.gedcdf import gedcdf
-from mfe_toolbox.distributions.gedinv import gedinv
-from mfe_toolbox.distributions.gedpdf import gedpdf
-from mfe_toolbox.distributions.gedloglik import gedloglik
-from mfe_toolbox.distributions.gedrnd import gedrnd
-
-# ---------------------------------------------------------------------------
-# Standardized Student's t
-# ---------------------------------------------------------------------------
-from mfe_toolbox.distributions.stdtcdf import stdtcdf
-from mfe_toolbox.distributions.stdtinv import stdtinv
-from mfe_toolbox.distributions.stdtpdf import stdtpdf
-from mfe_toolbox.distributions.stdtloglik import stdtloglik
-from mfe_toolbox.distributions.stdtrnd import stdtrnd
-
-# ---------------------------------------------------------------------------
-# Hansen's Skewed Student's t
-# ---------------------------------------------------------------------------
-from mfe_toolbox.distributions.skewtcdf import skewtcdf
-from mfe_toolbox.distributions.skewtinv import skewtinv
-from mfe_toolbox.distributions.skewtpdf import skewtpdf
-from mfe_toolbox.distributions.skewtloglik import skewtloglik
-
-# ---------------------------------------------------------------------------
-# Normal / Multivariate Normal
-# ---------------------------------------------------------------------------
-from mfe_toolbox.distributions.normloglik import normloglik
-from mfe_toolbox.distributions.mvnormloglik import mvnormloglik
-
-# ---------------------------------------------------------------------------
 # Composite Likelihood (Numba JIT)
+# Ref: distributions/composite_likelihood.m + mex_source/composite_likelihood.c
 # ---------------------------------------------------------------------------
 from mfe_toolbox.distributions.composite_likelihood import composite_likelihood
 
 # ---------------------------------------------------------------------------
+# GED (Generalized Error Distribution)
+# Ref: distributions/gedcdf.m, gedinv.m, gedloglik.m, gedpdf.m, gedrnd.m
+# ---------------------------------------------------------------------------
+from mfe_toolbox.distributions.gedcdf import gedcdf
+from mfe_toolbox.distributions.gedinv import gedinv
+from mfe_toolbox.distributions.gedloglik import gedloglik
+from mfe_toolbox.distributions.gedpdf import gedpdf
+from mfe_toolbox.distributions.gedrnd import gedrnd
+
+# ---------------------------------------------------------------------------
 # Shape Compatibility
+# Ref: distributions/iscompatible.m
 # ---------------------------------------------------------------------------
 from mfe_toolbox.distributions.iscompatible import iscompatible
 
+# ---------------------------------------------------------------------------
+# Normal / Multivariate Normal
+# Ref: distributions/mvnormloglik.m, normloglik.m
+# ---------------------------------------------------------------------------
+from mfe_toolbox.distributions.mvnormloglik import mvnormloglik
+from mfe_toolbox.distributions.normloglik import normloglik
+
+# ---------------------------------------------------------------------------
+# Hansen's (1994) Skewed Student's t
+# Ref: distributions/skewtcdf.m, skewtinv.m, skewtloglik.m, skewtpdf.m, skewtrnd.m
+# ---------------------------------------------------------------------------
+from mfe_toolbox.distributions.skewtcdf import skewtcdf
+from mfe_toolbox.distributions.skewtinv import skewtinv
+from mfe_toolbox.distributions.skewtloglik import skewtloglik
+from mfe_toolbox.distributions.skewtpdf import skewtpdf
+from mfe_toolbox.distributions.skewtrnd import skewtrnd
+
+# ---------------------------------------------------------------------------
+# Standardized Student's t (unit variance)
+# Ref: distributions/stdtcdf.m, stdtinv.m, stdtloglik.m, stdtpdf.m, stdtrnd.m
+# ---------------------------------------------------------------------------
+from mfe_toolbox.distributions.stdtcdf import stdtcdf
+from mfe_toolbox.distributions.stdtinv import stdtinv
+from mfe_toolbox.distributions.stdtloglik import stdtloglik
+from mfe_toolbox.distributions.stdtpdf import stdtpdf
+from mfe_toolbox.distributions.stdtrnd import stdtrnd
+
+# ---------------------------------------------------------------------------
+# Public API — all 19 functions in alphabetical order
+# ---------------------------------------------------------------------------
 __all__ = [
-    # GED
+    'composite_likelihood',
     'gedcdf',
     'gedinv',
-    'gedpdf',
     'gedloglik',
+    'gedpdf',
     'gedrnd',
-    # Standardized Student's t
-    'stdtcdf',
-    'stdtinv',
-    'stdtpdf',
-    'stdtloglik',
-    'stdtrnd',
-    # Hansen's Skewed Student's t
+    'iscompatible',
+    'mvnormloglik',
+    'normloglik',
     'skewtcdf',
     'skewtinv',
-    'skewtpdf',
     'skewtloglik',
-    # Normal / Multivariate Normal
-    'normloglik',
-    'mvnormloglik',
-    # Composite Likelihood
-    'composite_likelihood',
-    # Shape Compatibility
-    'iscompatible',
+    'skewtpdf',
+    'skewtrnd',
+    'stdtcdf',
+    'stdtinv',
+    'stdtloglik',
+    'stdtpdf',
+    'stdtrnd',
 ]
