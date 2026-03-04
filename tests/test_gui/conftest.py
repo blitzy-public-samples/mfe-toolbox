@@ -39,24 +39,20 @@ SSIM_THRESHOLD: float = 0.95
 # ---------------------------------------------------------------------------
 
 @pytest.fixture(scope="session")
-def qapp_cls() -> QApplication:
-    """Provide a QApplication instance for the test session.
+def qapp_cls() -> type[QApplication]:
+    """Provide the QApplication *class* for pytest-qt's ``qapp`` fixture.
 
-    pytest-qt typically manages this via the ``qtbot`` fixture, but this
-    fixture serves as a safety fallback to guarantee a QApplication singleton
-    exists before any widget construction.  Session-scoped because
-    QApplication must be a singleton in any Qt process.
+    pytest-qt's built-in ``qapp`` fixture expects ``qapp_cls`` to return
+    a *class* (not an instance) — it calls ``qapp_cls(qapp_args)`` to
+    construct the singleton.  Returning an instance causes ``TypeError``
+    in ``isinstance(app, qapp_cls)`` inside pytest-qt.
 
     Returns
     -------
-    QApplication
-        The existing QApplication singleton, or a newly created one.
+    type[QApplication]
+        The QApplication class itself.
     """
-    app = QApplication.instance()
-    if app is None:
-        # Ref: QApplication requires at least an empty argv list.
-        app = QApplication([])
-    return app
+    return QApplication
 
 
 # ---------------------------------------------------------------------------
