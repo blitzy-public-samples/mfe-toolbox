@@ -119,8 +119,14 @@ def _armaxerrors_core(
         # Ref: armaxerrors.c:51-54 — AR term loop, 0-based C indexing.
         # p[i] is a float64 (MATLAB stores lag indices as doubles);
         # cast to int for safe array indexing.
+        # Bounds guard: when m < max(p), the index t - p[i] may be
+        # negative.  MATLAB convention treats out-of-bounds y access as 0
+        # (the caller is expected to augment y with leading zeros, but
+        # sarimax_likelihood.m passes m = size(x,2) which may be 0).
         for i in range(np_val):
-            e[t] -= parameters[constant + i] * y[t - int(p[i])]
+            lag_idx = t - int(p[i])
+            if lag_idx >= 0:
+                e[t] -= parameters[constant + i] * y[lag_idx]
 
         # Ref: armaxerrors.c:55-59 — exogenous terms.
         # C MEX uses column-major offset ``x[t + T*i]`` because MATLAB
@@ -131,8 +137,11 @@ def _armaxerrors_core(
 
         # Ref: armaxerrors.c:60-64 — MA term recursion with lagged errors.
         # q[i] is a float64 lag index; cast to int for indexing.
+        # Same bounds guard as the AR loop above for consistency.
         for i in range(nq):
-            e[t] -= parameters[constant + np_val + k + i] * e[t - int(q[i])]
+            lag_idx = t - int(q[i])
+            if lag_idx >= 0:
+                e[t] -= parameters[constant + np_val + k + i] * e[lag_idx]
 
         # Ref: armaxerrors.c:64 — ``e[t] = e[t];`` is a no-op in the C
         # source (and line 51 of armaxerrors.m).  Omitted in Python.
