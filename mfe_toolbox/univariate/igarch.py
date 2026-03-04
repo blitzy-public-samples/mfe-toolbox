@@ -63,14 +63,16 @@ def _concat_parts(*arrays):
 
 
 def _build_scipy_options(options_dict):
-    """Extract SLSQP-compatible options from the validated options dict.
+    """Extract L-BFGS-B-compatible options from the validated options dict.
 
     The parameter-check module produces a dict that may contain keys
-    intended for L-BFGS-B (``gtol``).  SLSQP only recognises ``ftol``,
-    ``maxiter``, ``disp``, and ``eps``.  Unknown keys are silently
-    discarded to avoid ``scipy`` warnings.
+    like ``gtol``, ``maxfun``, ``ftol``.  L-BFGS-B recognises ``maxiter``,
+    ``maxfun``, ``ftol``, ``gtol``, ``disp``, ``maxcor``, ``maxls``.
+    Unknown keys are silently discarded to avoid ``scipy`` warnings.
+
+    Ref: igarch.m uses fminunc (unconstrained) — AAP maps fminunc → L-BFGS-B.
     """
-    _allowed = {'ftol', 'maxiter', 'disp', 'eps'}
+    _allowed = {'ftol', 'gtol', 'maxiter', 'maxfun', 'disp', 'maxcor', 'maxls', 'eps'}
     return {k: v for k, v in options_dict.items() if k in _allowed}
 
 
@@ -159,9 +161,10 @@ def igarch(
 
     IGARCH models impose the unit-root constraint that the sum of all ARCH
     and GARCH coefficients equals 1.  Estimation is performed using
-    ``scipy.optimize.minimize`` with ``method='SLSQP'``, with the
-    constraint enforced implicitly by estimating only ``q-1`` free betas
-    (the last beta is a residual computed inside ``igarch_core``).
+    ``scipy.optimize.minimize`` with ``method='L-BFGS-B'`` (matching
+    MATLAB ``fminunc`` per AAP Rule 7), with the constraint enforced
+    implicitly by estimating only ``q-1`` free betas (the last beta is
+    a residual computed inside ``igarch_core``).
 
     Parameters
     ----------
@@ -393,7 +396,7 @@ def igarch(
     # Ref: igarch.m:169 — initial LL for convergence checking
     LL0: float = _objective(sv_transformed)
 
-    # Build SLSQP-compatible options
+    # Build L-BFGS-B-compatible options (Ref: igarch.m uses fminunc → L-BFGS-B per AAP)
     scipy_opts = _build_scipy_options(opt_dict)
 
     # ==================================================================
@@ -401,7 +404,7 @@ def igarch(
     # Ref: igarch.m:171
     # ==================================================================
     result = minimize(
-        _objective, sv_transformed, method='SLSQP', options=scipy_opts,
+        _objective, sv_transformed, method='L-BFGS-B', options=scipy_opts,
     )
     parameters = result.x.copy()
     LL: float = float(result.fun)
@@ -421,7 +424,7 @@ def igarch(
 
         # Ref: igarch.m:197
         result = minimize(
-            _objective, parameters, method='SLSQP', options=retry_opts,
+            _objective, parameters, method='L-BFGS-B', options=retry_opts,
         )
         parameters = result.x.copy()
         LL = float(result.fun)
@@ -485,7 +488,7 @@ def igarch(
 
             # Ref: igarch.m:224-226 — optimise from alternative start
             result = minimize(
-                _objective, alt_transformed, method='SLSQP',
+                _objective, alt_transformed, method='L-BFGS-B',
                 options=scipy_opts,
             )
             parameters = result.x.copy()
@@ -500,7 +503,7 @@ def igarch(
                 )
                 retry_opts = {**scipy_opts, 'maxiter': retry_maxiter}
                 result = minimize(
-                    _objective, parameters, method='SLSQP',
+                    _objective, parameters, method='L-BFGS-B',
                     options=retry_opts,
                 )
                 parameters = result.x.copy()

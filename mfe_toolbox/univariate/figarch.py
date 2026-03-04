@@ -150,7 +150,7 @@ def figarch(
     Ref: figarch.m:110-125 — Starting value grid search and transformation.
 
     Ref: figarch.m:133 — Primary optimization via fminunc (replaced by
-    scipy.optimize.minimize with method='SLSQP').
+    scipy.optimize.minimize with method='L-BFGS-B' per AAP Rule 7).
 
     Ref: figarch.m:140-209 — Robustness retries with alternative starting
     values and increased iteration limits.
@@ -252,11 +252,11 @@ def figarch(
             'disp': False,
         }
 
-    # Filter options to only include keys recognized by SLSQP to avoid
-    # OptimizeWarning from scipy.  figarch_parameter_check may create
-    # L-BFGS-B-style keys like 'gtol' and 'maxfun' that SLSQP ignores.
-    _slsqp_keys = {'ftol', 'eps', 'maxiter', 'disp'}
-    _filtered_options = {k: v for k, v in options.items() if k in _slsqp_keys}
+    # Filter options to only include keys recognized by L-BFGS-B to avoid
+    # OptimizeWarning from scipy.  Ref: figarch.m uses fminunc (unconstrained)
+    # — AAP maps fminunc → L-BFGS-B (Rule 7).
+    _lbfgsb_keys = {'ftol', 'gtol', 'maxiter', 'maxfun', 'disp', 'maxcor', 'maxls', 'eps'}
+    _filtered_options = {k: v for k, v in options.items() if k in _lbfgsb_keys}
 
     # ==================================================================
     # Objective function for optimization
@@ -277,10 +277,10 @@ def figarch(
 
     # Ref: figarch.m:133 — Primary optimization
     # MATLAB uses fminunc (unconstrained) because parameters are transformed.
-    # Python uses SLSQP (per AAP specification) which handles unconstrained
-    # problems when no bounds/constraints are provided.
+    # Python uses L-BFGS-B (per AAP Rule 7: fminunc → L-BFGS-B) which is
+    # the correct mapping for unconstrained optimization.
     result = minimize(
-        _objective, sv_transformed, method='SLSQP', options=_filtered_options
+        _objective, sv_transformed, method='L-BFGS-B', options=_filtered_options
     )
     parameters = result.x.copy()
     LL = result.fun
@@ -301,9 +301,9 @@ def figarch(
         retry_options['maxiter'] = 2 * current_maxiter
 
         # Ref: figarch.m:158 — Re-optimize from current best parameters
-        retry_filtered = {k: v for k, v in retry_options.items() if k in _slsqp_keys}
+        retry_filtered = {k: v for k, v in retry_options.items() if k in _lbfgsb_keys}
         result2 = minimize(
-            _objective, parameters, method='SLSQP', options=retry_filtered
+            _objective, parameters, method='L-BFGS-B', options=retry_filtered
         )
         parameters = result2.x.copy()
         LL = result2.fun
@@ -342,7 +342,7 @@ def figarch(
 
             # Ref: figarch.m:187 — Optimize with alternative starting values
             result_alt = minimize(
-                _objective, alt_transformed, method='SLSQP',
+                _objective, alt_transformed, method='L-BFGS-B',
                 options=_filtered_options,
             )
             alt_params = result_alt.x.copy()
@@ -356,10 +356,10 @@ def figarch(
                 retry_opts = dict(options)
                 retry_opts['maxiter'] = 2 * options.get('maxiter', 800)
                 retry_opts_filtered = {
-                    k: v for k, v in retry_opts.items() if k in _slsqp_keys
+                    k: v for k, v in retry_opts.items() if k in _lbfgsb_keys
                 }
                 result_alt2 = minimize(
-                    _objective, alt_params, method='SLSQP',
+                    _objective, alt_params, method='L-BFGS-B',
                     options=retry_opts_filtered,
                 )
                 alt_params = result_alt2.x.copy()

@@ -119,10 +119,11 @@ def _armaxerrors_core(
         # Ref: armaxerrors.c:51-54 — AR term loop, 0-based C indexing.
         # p[i] is a float64 (MATLAB stores lag indices as doubles);
         # cast to int for safe array indexing.
-        # Bounds guard: when m < max(p), the index t - p[i] may be
-        # negative.  MATLAB convention treats out-of-bounds y access as 0
-        # (the caller is expected to augment y with leading zeros, but
-        # sarimax_likelihood.m passes m = size(x,2) which may be 0).
+        # Python safety: MATLAB C MEX has undefined behavior for
+        # out-of-bounds access (armaxerrors.c does not guard against
+        # negative indices).  This guard prevents negative array
+        # indexing in Python while preserving numerical parity for
+        # valid inputs where the caller pre-pads y with leading zeros.
         for i in range(np_val):
             lag_idx = t - int(p[i])
             if lag_idx >= 0:
@@ -137,7 +138,8 @@ def _armaxerrors_core(
 
         # Ref: armaxerrors.c:60-64 — MA term recursion with lagged errors.
         # q[i] is a float64 lag index; cast to int for indexing.
-        # Same bounds guard as the AR loop above for consistency.
+        # Python safety: MATLAB C MEX has undefined behavior for
+        # out-of-bounds access.  Same guard as the AR loop above.
         for i in range(nq):
             lag_idx = t - int(q[i])
             if lag_idx >= 0:

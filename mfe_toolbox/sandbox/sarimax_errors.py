@@ -172,13 +172,14 @@ def sarimax_errors(
     parameters = np.concatenate([parameters[:m], arma_parameters])
 
     # ------------------------------------------------------------------
-    # Burn-in padding: the MATLAB original relies on pre-padded data from
-    # the caller (armaxfilter.m) so that AR/MA lags never index before the
-    # array start.  In a standalone call the MATLAB MEX would read
-    # uninitialized memory (undefined behaviour in C).  To achieve
-    # correct zero-initial-condition semantics — matching the MATLAB
-    # fixture reference outputs — we pre-pad y, x, and sigma with zeros
-    # (ones for sigma) when the maximum lag exceeds the burn-in index m.
+    # Burn-in padding: Python safety addition — NOT present in MATLAB
+    # original (sarimax_errors.m:35).  The MATLAB source relies on
+    # pre-padded data from the caller (armaxfilter.m) so that AR/MA lags
+    # never index before the array start.  In a standalone call the MATLAB
+    # C MEX (armaxerrors.c) would read uninitialized memory (undefined
+    # behaviour in C).  This padding ensures correct zero-initial-condition
+    # semantics in Python, preventing negative array indexing when
+    # max_lag > burn (the exogenous column count m).
     # Ref: sarimax_errors.m:35 + mex_source/armaxerrors.c:40-65
     # ------------------------------------------------------------------
     max_lag: int = 0

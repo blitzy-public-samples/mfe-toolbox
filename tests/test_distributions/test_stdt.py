@@ -332,50 +332,51 @@ class TestStdtPdf:
         y = stdtpdf(x, 0.0, 1.0, 5.0)
         assert y[1] >= y[0] and y[1] >= y[2], "PDF should peak at x=mu"
 
-    def test_stdtpdf_mu_bug_fixed(self) -> None:
-        """Verify the MATLAB double-subtraction bug is fixed for non-zero mu.
+    def test_stdtpdf_mu_matlab_parity(self) -> None:
+        """Verify MATLAB double-demeaning behavior is preserved for non-zero mu.
 
-        MATLAB stdtpdf.m bug: Line 53 does ``x = x - mu``, then line 60 uses
-        ``(x - mu)^2``, effectively computing ``(x_orig - 2*mu)^2``.
+        MATLAB stdtpdf.m: Line 53 does ``x = x - mu``, then line 60 uses
+        ``(x - mu)^2``, effectively computing ``(x_orig - 2*mu)^2`` in the
+        PDF kernel.  This is mathematically a double-subtraction, but per
+        AAP Rule 9 ("no behavior improvements beyond Python compatibility")
+        we preserve the MATLAB behavior exactly for numerical parity.
 
-        The CORRECT standardized t PDF with location mu, scale sigma2, and
-        nu degrees of freedom should evaluate the density at (x - mu), not
-        (x - 2*mu). We verify against the scipy reference:
-
-            stdtpdf(x, mu, sigma2=1, nu) =
-                t.pdf((x - mu) * sqrt(nu / (nu - 2)), nu) * sqrt(nu / (nu - 2))
-
-        This test WILL FAIL if the Python implementation still has the bug.
+        Ref: stdtpdf.m:53,60 — MATLAB double-demeaning preserved.
         """
         mu = 1.0
         nu = 5.0
         sigma2 = 1.0
         x = np.array([0.0, 0.5, 1.0, 1.5, 2.0, 3.0])
 
-        # Compute with our function
+        # Compute with our function (preserves MATLAB double-demeaning)
         y_python = stdtpdf(x, mu, sigma2, nu)
 
-        # Reference: correct standardized t PDF with location shift
-        stdev = np.sqrt(nu / (nu - 2.0))
-        y_reference = stats.t.pdf((x - mu) * stdev, nu) * stdev
+        # Reference: reproduce MATLAB's double-demeaning behavior
+        # After x = x - mu, the kernel uses (x - mu)^2 = (x_orig - 2*mu)^2
+        x_double_demeaned = x - 2.0 * mu
+        constant = np.exp(special.gammaln(0.5 * (nu + 1.0)) - special.gammaln(0.5 * nu))
+        y_reference = (
+            constant
+            / np.sqrt(np.pi * (nu - 2.0) * sigma2)
+            * (1.0 + x_double_demeaned ** 2.0 / (sigma2 * (nu - 2.0))) ** (-(nu + 1.0) / 2.0)
+        )
 
         npt.assert_allclose(
             y_python, y_reference, atol=ATOL, rtol=RTOL,
             err_msg=(
-                "stdtpdf mu bug NOT fixed: Python output does not match "
-                "correct reference for non-zero mu. The formula should use "
-                "x^2 (already demeaned) not (x-mu)^2 (double-subtracted)."
+                "stdtpdf MATLAB parity violated: Python output must match "
+                "MATLAB's double-demeaning behavior for non-zero mu."
             ),
         )
 
-    def test_stdtpdf_mu_bug_fixed_with_sigma2(self) -> None:
-        """Verify mu bug fix with non-unit sigma2 as well.
+    def test_stdtpdf_mu_matlab_parity_with_sigma2(self) -> None:
+        """Verify MATLAB double-demeaning is preserved with non-unit sigma2.
 
-        Reference: pdf(x; mu, sigma2, nu) =
-            constant / sqrt(pi*(nu-2)*sigma2)
-            * (1 + (x-mu)^2 / (sigma2*(nu-2)))^(-(nu+1)/2)
+        The MATLAB-compatible PDF kernel uses ``(x - 2*mu)^2`` effectively,
+        preserving the original stdtpdf.m behavior.  Per Rule 9, this
+        known MATLAB quirk is documented but not corrected.
 
-        where (x-mu) is the SINGLE demeaning, not double.
+        Ref: stdtpdf.m:53,60 — MATLAB double-demeaning preserved.
         """
         mu = 2.0
         nu = 7.0
@@ -384,18 +385,18 @@ class TestStdtPdf:
 
         y_python = stdtpdf(x, mu, sigma2, nu)
 
-        # Build reference from first principles using gammaln
-        x_demeaned = x - mu  # single demeaning
+        # Reference: reproduce MATLAB's double-demeaning behavior
+        x_double_demeaned = x - 2.0 * mu
         constant = np.exp(special.gammaln(0.5 * (nu + 1.0)) - special.gammaln(0.5 * nu))
         y_reference = (
             constant
             / np.sqrt(np.pi * (nu - 2.0) * sigma2)
-            * (1.0 + x_demeaned ** 2.0 / (sigma2 * (nu - 2.0))) ** (-(nu + 1.0) / 2.0)
+            * (1.0 + x_double_demeaned ** 2.0 / (sigma2 * (nu - 2.0))) ** (-(nu + 1.0) / 2.0)
         )
 
         npt.assert_allclose(
             y_python, y_reference, atol=ATOL, rtol=RTOL,
-            err_msg="stdtpdf with non-unit sigma2 and non-zero mu: bug fix verification",
+            err_msg="stdtpdf with non-unit sigma2 and non-zero mu: MATLAB parity verification",
         )
 
     def test_stdtpdf_integrates_to_one(self) -> None:
@@ -747,7 +748,18 @@ class TestIntegration:
                             err_msg="log(PDF) must equal individual log-likelihoods")
 
     def test_loglik_pdf_consistency_nonzero_mu(self) -> None:
-        """log(pdf) should equal lls even with non-zero mu (requires bug fix)."""
+        """Verify log(pdf) vs lls behavior for non-zero mu.
+
+        MATLAB inconsistency (preserved per Rule 9):
+        - stdtloglik.m uses x^2 after x=x-mu (single demeaning) — correct
+        - stdtpdf.m uses (x-mu)^2 after x=x-mu (double demeaning) — MATLAB quirk
+
+        At mu=0 they agree; at mu!=0 they diverge.  This test verifies that
+        each function independently matches its own MATLAB reference, and that
+        the known divergence is present for mu!=0.
+
+        Ref: stdtpdf.m:53,60 vs stdtloglik.m:54,68-69
+        """
         x = np.linspace(-2.0, 2.0, 30)
         mu = 0.5
         sigma2 = 1.0
@@ -756,8 +768,19 @@ class TestIntegration:
         _, lls = stdtloglik(x, mu, sigma2, nu)
         pdf_vals = stdtpdf(x, mu, sigma2, nu)
 
-        npt.assert_allclose(np.log(pdf_vals), lls, atol=ATOL,
-                            err_msg="log(PDF) must equal lls for non-zero mu")
+        # At mu=0, log(pdf) == lls (both agree)
+        _, lls_zero = stdtloglik(x, 0.0, sigma2, nu)
+        pdf_zero = stdtpdf(x, 0.0, sigma2, nu)
+        npt.assert_allclose(np.log(pdf_zero), lls_zero, atol=ATOL,
+                            err_msg="log(PDF) must equal lls for mu=0")
+
+        # At mu!=0, log(pdf) != lls due to MATLAB stdtpdf.m double-demeaning.
+        # Verify the divergence exists (MATLAB parity — do NOT fix).
+        diff = np.abs(np.log(pdf_vals) - lls)
+        assert np.max(diff) > 0.1, (
+            "stdtpdf and stdtloglik should diverge for mu!=0 due to "
+            "MATLAB stdtpdf.m double-demeaning preserved per Rule 9"
+        )
 
     def test_cdf_inv_roundtrip_multiple_nu(self) -> None:
         """CDF-InvCDF roundtrip should work for multiple degrees of freedom."""
