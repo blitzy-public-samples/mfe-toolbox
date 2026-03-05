@@ -1,147 +1,58 @@
 """
-MFE Toolbox univariate subpackage — univariate GARCH model families.
+MFE Toolbox — Univariate GARCH Models.
 
-Provides seven GARCH model families (AGARCH, APARCH, EGARCH, FIGARCH, HEAVY,
-IGARCH, TARCH) with their helper modules:
+Implements seven families of univariate GARCH volatility models migrated from
+the MATLAB MFE Toolbox (Version 4.0) ``univariate/`` directory:
 
-- **AGARCH**: agarch_core, agarch_display, agarch_itransform, agarch_likelihood,
-  agarch_parameter_check, agarch_transform
-- **APARCH**: aparch_core, aparch_display, aparch_itransform, aparch_likelihood,
-  aparch_loglikelihood, aparch_parameter_check, aparch_transform
-- **EGARCH**: egarch_core, egarch_display, egarch_itransform, egarch_likelihood,
-  egarch_nlcon, egarch_parameter_check, egarch_transform
-- **FIGARCH**: figarch, figarch_itransform, figarch_likelihood,
-  figarch_parameter_check, figarch_starting_values, figarch_transform, figarch_weights
-- **HEAVY**: heavy_likelihood, heavy_parameter_transform, heavy_simulate
-- **IGARCH**: igarch_core, igarch_display, igarch_itransform, igarch_likelihood,
-  igarch_parameter_check, igarch_transform
-- **TARCH**: tarch_core, tarch_core_simple, tarch_display, tarch_itransform,
-  tarch_likelihood, tarch_parameter_check, tarch_transform
+* **AGARCH / NAGARCH** — Asymmetric GARCH (Engle 1990) and Nonlinear
+  Asymmetric GARCH (Engle & Ng 1993).
+* **APARCH** — Asymmetric Power ARCH (Ding, Granger & Engle 1993),
+  nesting standard GARCH, GJR-GARCH, and absolute-value GARCH as
+  special cases via the power parameter delta.
+* **EGARCH** — Exponential GARCH (Nelson 1991) with log-variance
+  recursion and leverage effects.
+* **FIGARCH** — Fractionally Integrated GARCH (Baillie, Bollerslev &
+  Mikkelsen 1996) capturing long-memory dependence in conditional
+  variance.
+* **HEAVY** — High-frEquency bAsed VolatilitY model (Shephard &
+  Sheppard 2010) jointly modelling returns and realized measures.
+* **IGARCH** — Integrated GARCH with unit-root constraint
+  ``sum(alpha) + sum(beta) = 1``.
+* **TARCH / GJR-GARCH** — Threshold ARCH (Zakoian 1994) and
+  GJR-GARCH (Glosten, Jagannathan & Runkle 1993) with asymmetric
+  leverage effects.
 
-All modules are re-exported here for convenient access via
-``from mfe_toolbox.univariate import tarch_core, agarch_core`` etc.
+Each model family exposes a single public driver function through this
+subpackage.  Internal helper modules (``*_core``, ``*_likelihood``,
+``*_transform``, ``*_itransform``, ``*_display``, ``*_parameter_check``,
+``*_starting_values``, ``*_simulate``) are accessible via their full
+import path (e.g., ``from mfe_toolbox.univariate.tarch_core import
+tarch_core``) but are **not** re-exported at the subpackage level.
 
-Per AAP Section 0.4.1: 1:1 migration from univariate/*.m.
+Usage
+-----
+>>> from mfe_toolbox.univariate import tarch
+>>> results = tarch(data, p=1, o=1, q=1)
+
+Or import all public drivers at once:
+
+>>> from mfe_toolbox.univariate import *  # imports agarch … tarch
 """
 
-# ---------------------------------------------------------------------------
-# AGARCH model family
-# ---------------------------------------------------------------------------
-from mfe_toolbox.univariate.agarch_core import agarch_core
-from mfe_toolbox.univariate.agarch_display import agarch_display
-from mfe_toolbox.univariate.agarch_itransform import agarch_itransform
-from mfe_toolbox.univariate.agarch_likelihood import agarch_likelihood
-from mfe_toolbox.univariate.agarch_parameter_check import agarch_parameter_check
-from mfe_toolbox.univariate.agarch_transform import agarch_transform
-
-# ---------------------------------------------------------------------------
-# APARCH model family
-# ---------------------------------------------------------------------------
-from mfe_toolbox.univariate.aparch_core import aparch_core
-from mfe_toolbox.univariate.aparch_display import aparch_display
-from mfe_toolbox.univariate.aparch_itransform import aparch_itransform
-from mfe_toolbox.univariate.aparch_likelihood import aparch_likelihood
-from mfe_toolbox.univariate.aparch_parameter_check import aparch_parameter_check
-from mfe_toolbox.univariate.aparch_transform import aparch_transform
-
-# ---------------------------------------------------------------------------
-# EGARCH model family
-# ---------------------------------------------------------------------------
-from mfe_toolbox.univariate.egarch_core import egarch_core
-from mfe_toolbox.univariate.egarch_display import egarch_display
-from mfe_toolbox.univariate.egarch_itransform import egarch_itransform
-from mfe_toolbox.univariate.egarch_likelihood import egarch_likelihood
-from mfe_toolbox.univariate.egarch_nlcon import egarch_nlcon
-from mfe_toolbox.univariate.egarch_parameter_check import egarch_parameter_check
-from mfe_toolbox.univariate.egarch_transform import egarch_transform
-
-# ---------------------------------------------------------------------------
-# FIGARCH model family
-# ---------------------------------------------------------------------------
+from mfe_toolbox.univariate.agarch import agarch
+from mfe_toolbox.univariate.aparch import aparch
+from mfe_toolbox.univariate.egarch import egarch
 from mfe_toolbox.univariate.figarch import figarch
-from mfe_toolbox.univariate.figarch_itransform import figarch_itransform
-from mfe_toolbox.univariate.figarch_likelihood import figarch_likelihood
-from mfe_toolbox.univariate.figarch_parameter_check import figarch_parameter_check
-from mfe_toolbox.univariate.figarch_starting_values import figarch_starting_values
-from mfe_toolbox.univariate.figarch_transform import figarch_transform
-from mfe_toolbox.univariate.figarch_weights import figarch_weights
-
-# ---------------------------------------------------------------------------
-# HEAVY model family
-# ---------------------------------------------------------------------------
-from mfe_toolbox.univariate.heavy_likelihood import heavy_likelihood
-from mfe_toolbox.univariate.heavy_parameter_transform import heavy_parameter_transform
-from mfe_toolbox.univariate.heavy_simulate import heavy_simulate
-
-# ---------------------------------------------------------------------------
-# IGARCH model family
-# ---------------------------------------------------------------------------
-from mfe_toolbox.univariate.igarch_core import igarch_core
-from mfe_toolbox.univariate.igarch_display import igarch_display
-from mfe_toolbox.univariate.igarch_itransform import igarch_itransform
-from mfe_toolbox.univariate.igarch_likelihood import igarch_likelihood
-from mfe_toolbox.univariate.igarch_parameter_check import igarch_parameter_check
-from mfe_toolbox.univariate.igarch_transform import igarch_transform
-
-# ---------------------------------------------------------------------------
-# TARCH / GJR-GARCH model family
-# ---------------------------------------------------------------------------
-from mfe_toolbox.univariate.tarch_core import tarch_core
-from mfe_toolbox.univariate.tarch_core_simple import tarch_core_simple
-from mfe_toolbox.univariate.tarch_display import tarch_display
-from mfe_toolbox.univariate.tarch_itransform import tarch_itransform
-from mfe_toolbox.univariate.tarch_likelihood import tarch_likelihood
-from mfe_toolbox.univariate.tarch_parameter_check import tarch_parameter_check
-from mfe_toolbox.univariate.tarch_transform import tarch_transform
+from mfe_toolbox.univariate.heavy import heavy
+from mfe_toolbox.univariate.igarch import igarch
+from mfe_toolbox.univariate.tarch import tarch
 
 __all__ = [
-    # AGARCH
-    'agarch_core',
-    'agarch_display',
-    'agarch_itransform',
-    'agarch_likelihood',
-    'agarch_parameter_check',
-    'agarch_transform',
-    # APARCH
-    'aparch_core',
-    'aparch_display',
-    'aparch_itransform',
-    'aparch_likelihood',
-    'aparch_parameter_check',
-    'aparch_transform',
-    # EGARCH
-    'egarch_core',
-    'egarch_display',
-    'egarch_itransform',
-    'egarch_likelihood',
-    'egarch_nlcon',
-    'egarch_parameter_check',
-    'egarch_transform',
-    # FIGARCH
-    'figarch',
-    'figarch_itransform',
-    'figarch_likelihood',
-    'figarch_parameter_check',
-    'figarch_starting_values',
-    'figarch_transform',
-    'figarch_weights',
-    # HEAVY
-    'heavy_likelihood',
-    'heavy_parameter_transform',
-    'heavy_simulate',
-    # IGARCH
-    'igarch_core',
-    'igarch_display',
-    'igarch_itransform',
-    'igarch_likelihood',
-    'igarch_parameter_check',
-    'igarch_transform',
-    # TARCH
-    'tarch_core',
-    'tarch_core_simple',
-    'tarch_display',
-    'tarch_itransform',
-    'tarch_likelihood',
-    'tarch_parameter_check',
-    'tarch_transform',
+    "agarch",
+    "aparch",
+    "egarch",
+    "figarch",
+    "heavy",
+    "igarch",
+    "tarch",
 ]
