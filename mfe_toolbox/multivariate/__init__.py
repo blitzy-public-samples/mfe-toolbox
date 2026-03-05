@@ -1,127 +1,71 @@
 """
-MFE Toolbox multivariate subpackage — multivariate GARCH models.
+MFE Toolbox — Multivariate GARCH Models
 
-Provides BEKK, CCC-MVGARCH, DCC, GO-GARCH, Matrix GARCH, O-GARCH, RARCH,
-RCC, RiskMetrics, and Scalar VT-VECH model implementations:
+Provides 11 multivariate GARCH model families for conditional covariance
+estimation, spanning a wide range of parameterisation strategies:
 
-- **BEKK**: bekk_constraint, bekk_likelihood, bekk_parameter_transform, bekk_simulate
-- **CCC-MVGARCH**: ccc_mvgarch, ccc_mvgarch_joint_likelihood, ccc_mvgarch_likelihood,
-  ccc_mvgarch_simulate
-- **DCC**: dcc_reconstruct_variance
-- **GO-GARCH**: gogarch_likelihood
-- **Matrix GARCH**: matrix_garch_display, matrix_garch_likelihood, matrix_garch_simulate
-- **O-GARCH**: ogarch_likelihood
-- **RARCH**: rarch_constraint, rarch_likelihood, rarch_parameter_transform, rarch_simulate
-- **RCC**: rcc_constraint
-- **RiskMetrics**: riskmetrics, riskmetrics2006
-- **Scalar VT-VECH**: scalar_vt_vech_itransform, scalar_vt_vech_likelihood,
-  scalar_vt_vech_simulate, scalar_vt_vech_transform
+- **BEKK**: Full, Diagonal, and Scalar BEKK(p,o,q) models with symmetric and
+  asymmetric dynamics (Engle & Kroner, 1995).
+- **CCC-MVGARCH**: Constant Conditional Correlation with per-series TARCH/GJR
+  conditional variances (Bollerslev, 1990).
+- **DCC/ADCC**: Dynamic Conditional Correlation with symmetric and asymmetric
+  correlation dynamics and optional composite likelihood (Engle, 2002).
+- **GO-GARCH**: Generalized Orthogonal GARCH with PCA-based decomposition and
+  optional Givens rotation angles (van der Weide, 2002).
+- **Matrix GARCH**: Hadamard product multivariate GARCH with full K×K parameter
+  matrices for covariance dynamics.
+- **O-MVGARCH**: Orthogonal/Factor GARCH using PCA-based dimension reduction
+  with per-factor univariate GARCH fitting (Carroll, 2000).
+- **RARCH**: Rotated ARCH with Scalar, Common Persistence, and Diagonal
+  parameterisations in the rotated covariance space (Noureldin, Shephard &
+  Sheppard).
+- **RCC**: Regime-switching Conditional Correlation with RARCH-style dynamics
+  in the correlation space and TARCH conditional variances.
+- **RiskMetrics**: EWMA exponential smoothing covariance estimation — pure
+  filtering with no optimisation required (J.P. Morgan, 1996).
+- **RiskMetrics 2006**: Multi-frequency EWMA covariance estimation using
+  weighted averages across multiple half-lives.
+- **Scalar VT-VECH**: Scalar Variance Targeting VECH with symmetric/asymmetric
+  dynamics and optional composite likelihood.
 
-All modules are re-exported here for convenient access via
-``from mfe_toolbox.multivariate import ccc_mvgarch, riskmetrics`` etc.
+All model drivers are re-exported here for convenient access::
 
-Per AAP Section 0.4.1: 1:1 migration from multivariate/*.m.
+    from mfe_toolbox.multivariate import bekk, dcc, ccc_mvgarch
+
+Helper modules (likelihoods, constraints, transforms, simulations, displays)
+are not imported at the subpackage level — import them explicitly when needed,
+e.g.::
+
+    from mfe_toolbox.multivariate.bekk_likelihood import bekk_likelihood
+
+Per AAP Section 0.4.1: 1:1 migration from multivariate/*.m driver functions.
 """
 
 # ---------------------------------------------------------------------------
-# BEKK model family
+# Primary driver function imports — one per model family
 # ---------------------------------------------------------------------------
-from mfe_toolbox.multivariate.bekk_constraint import bekk_constraint
-from mfe_toolbox.multivariate.bekk_likelihood import bekk_likelihood
-from mfe_toolbox.multivariate.bekk_parameter_transform import bekk_parameter_transform
-from mfe_toolbox.multivariate.bekk_simulate import bekk_simulate
-
-# ---------------------------------------------------------------------------
-# CCC-MVGARCH model family
-# ---------------------------------------------------------------------------
+from mfe_toolbox.multivariate.bekk import bekk
 from mfe_toolbox.multivariate.ccc_mvgarch import ccc_mvgarch
-from mfe_toolbox.multivariate.ccc_mvgarch_joint_likelihood import ccc_mvgarch_joint_likelihood
-from mfe_toolbox.multivariate.ccc_mvgarch_likelihood import ccc_mvgarch_likelihood
-from mfe_toolbox.multivariate.ccc_mvgarch_simulate import ccc_mvgarch_simulate
-
-# ---------------------------------------------------------------------------
-# DCC model family
-# ---------------------------------------------------------------------------
-from mfe_toolbox.multivariate.dcc_reconstruct_variance import dcc_reconstruct_variance
-
-# ---------------------------------------------------------------------------
-# GO-GARCH model family
-# ---------------------------------------------------------------------------
-from mfe_toolbox.multivariate.gogarch_likelihood import gogarch_likelihood
-
-# ---------------------------------------------------------------------------
-# Matrix GARCH model family
-# ---------------------------------------------------------------------------
-from mfe_toolbox.multivariate.matrix_garch_display import matrix_garch_display
-from mfe_toolbox.multivariate.matrix_garch_likelihood import matrix_garch_likelihood
-from mfe_toolbox.multivariate.matrix_garch_simulate import matrix_garch_simulate
-
-# ---------------------------------------------------------------------------
-# O-GARCH model family
-# ---------------------------------------------------------------------------
-from mfe_toolbox.multivariate.ogarch_likelihood import ogarch_likelihood
-
-# ---------------------------------------------------------------------------
-# RARCH model family
-# ---------------------------------------------------------------------------
-from mfe_toolbox.multivariate.rarch_constraint import rarch_constraint
-from mfe_toolbox.multivariate.rarch_likelihood import rarch_likelihood
-from mfe_toolbox.multivariate.rarch_parameter_transform import rarch_parameter_transform
-from mfe_toolbox.multivariate.rarch_simulate import rarch_simulate
-
-# ---------------------------------------------------------------------------
-# RCC model family
-# ---------------------------------------------------------------------------
-from mfe_toolbox.multivariate.rcc_constraint import rcc_constraint
-
-# ---------------------------------------------------------------------------
-# RiskMetrics
-# ---------------------------------------------------------------------------
+from mfe_toolbox.multivariate.dcc import dcc
+from mfe_toolbox.multivariate.gogarch import gogarch
+from mfe_toolbox.multivariate.matrix_garch import matrix_garch
+from mfe_toolbox.multivariate.o_mvgarch import o_mvgarch
+from mfe_toolbox.multivariate.rarch import rarch
+from mfe_toolbox.multivariate.rcc import rcc
 from mfe_toolbox.multivariate.riskmetrics import riskmetrics
 from mfe_toolbox.multivariate.riskmetrics2006 import riskmetrics2006
-
-# ---------------------------------------------------------------------------
-# Scalar VT-VECH model family
-# ---------------------------------------------------------------------------
-from mfe_toolbox.multivariate.scalar_vt_vech_itransform import scalar_vt_vech_itransform
-from mfe_toolbox.multivariate.scalar_vt_vech_likelihood import scalar_vt_vech_likelihood
-from mfe_toolbox.multivariate.scalar_vt_vech_simulate import scalar_vt_vech_simulate
-from mfe_toolbox.multivariate.scalar_vt_vech_transform import scalar_vt_vech_transform
+from mfe_toolbox.multivariate.scalar_vt_vech import scalar_vt_vech
 
 __all__ = [
-    # BEKK
-    'bekk_constraint',
-    'bekk_likelihood',
-    'bekk_parameter_transform',
-    'bekk_simulate',
-    # CCC-MVGARCH
-    'ccc_mvgarch',
-    'ccc_mvgarch_joint_likelihood',
-    'ccc_mvgarch_likelihood',
-    'ccc_mvgarch_simulate',
-    # DCC
-    'dcc_reconstruct_variance',
-    # GO-GARCH
-    'gogarch_likelihood',
-    # Matrix GARCH
-    'matrix_garch_display',
-    'matrix_garch_likelihood',
-    'matrix_garch_simulate',
-    # O-GARCH
-    'ogarch_likelihood',
-    # RARCH
-    'rarch_constraint',
-    'rarch_likelihood',
-    'rarch_parameter_transform',
-    'rarch_simulate',
-    # RCC
-    'rcc_constraint',
-    # RiskMetrics
-    'riskmetrics',
-    'riskmetrics2006',
-    # Scalar VT-VECH
-    'scalar_vt_vech_itransform',
-    'scalar_vt_vech_likelihood',
-    'scalar_vt_vech_simulate',
-    'scalar_vt_vech_transform',
+    "bekk",
+    "ccc_mvgarch",
+    "dcc",
+    "gogarch",
+    "matrix_garch",
+    "o_mvgarch",
+    "rarch",
+    "rcc",
+    "riskmetrics",
+    "riskmetrics2006",
+    "scalar_vt_vech",
 ]
