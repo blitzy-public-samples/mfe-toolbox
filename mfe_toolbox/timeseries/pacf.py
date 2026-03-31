@@ -64,7 +64,7 @@ def pacf(y: np.ndarray, lags: int) -> tuple[np.ndarray, np.ndarray]:
     bounds : numpy.ndarray
         Shape ``(lags + 1,)`` array of asymptotic confidence bounds
         computed as ``1.96 / sqrt(T)``, where ``T = len(y)``.  Under the
-        null hypothesis of white noise, approximately 95%% of sample PACF
+        null hypothesis of white noise, approximately 95% of sample PACF
         values should fall within ``[-bounds[k], +bounds[k]]``.
 
     Raises
@@ -74,9 +74,16 @@ def pacf(y: np.ndarray, lags: int) -> tuple[np.ndarray, np.ndarray]:
     ValueError
         If ``y`` is empty or contains non-numeric values.
     ValueError
+        If ``y`` contains NaN or Inf values.
+    ValueError
+        If ``y`` has zero variance (constant series after mean removal).
+    ValueError
         If ``lags`` is not a positive integer.
     ValueError
         If ``lags >= len(y) / 2`` (safety threshold).
+    ValueError
+        If the autocorrelation matrix becomes singular during
+        Levinson-Durbin recursion (degenerate data).
 
     Notes
     -----
@@ -134,6 +141,10 @@ def pacf(y: np.ndarray, lags: int) -> tuple[np.ndarray, np.ndarray]:
     if y.ndim == 0 or len(y) == 0:
         raise ValueError("y must be a non-empty 1-D array.")
 
+    # Reject NaN/Inf values — these produce undefined autocovariances
+    if not np.all(np.isfinite(y)):
+        raise ValueError("y must not contain NaN or Inf values.")
+
     # Validate lags: must be a positive integer scalar
     if isinstance(lags, (float, np.floating)):
         # Allow float that is exactly integer (e.g. 5.0)
@@ -168,6 +179,14 @@ def pacf(y: np.ndarray, lags: int) -> tuple[np.ndarray, np.ndarray]:
     gamma = np.empty(lags + 1, dtype=np.float64)
     for k in range(lags + 1):
         gamma[k] = (1.0 / T) * np.sum(y[k:] * y[: T - k])
+
+    # Guard against zero-variance input (constant series after demeaning).
+    # gamma[0] == 0 means y is constant; PACF is undefined.
+    if gamma[0] == 0.0:
+        raise ValueError(
+            "y has zero variance after mean removal (constant series); "
+            "PACF is undefined."
+        )
 
     # Normalize to autocorrelations: rho[k] = gamma[k] / gamma[0]
     # ac has exactly `lags` elements (lags 1 through lags)
@@ -215,6 +234,11 @@ def pacf(y: np.ndarray, lags: int) -> tuple[np.ndarray, np.ndarray]:
 
             # Schur complement scalar inverse.  Ref: pacf.m:78
             schur_scalar = D - (C @ AinvB).item()
+            if abs(schur_scalar) < 100.0 * np.finfo(float).eps:
+                raise ValueError(
+                    "Degenerate autocorrelation matrix encountered at "
+                    f"lag {i + 1}; Schur complement is singular."
+                )
             schur_inv = 1.0 / schur_scalar
 
             # Updated inverse of the augmented Toeplitz system via

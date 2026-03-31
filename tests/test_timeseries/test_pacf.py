@@ -206,12 +206,13 @@ def test_pacf_ar1_data() -> None:
         ),
     )
 
-    # Higher-order PACFs should be near zero (finite-sample tolerance)
+    # Higher-order PACFs should be near zero (finite-sample tolerance).
+    # For AR(1), the theoretical PACF is exactly 0 at lag >= 2.
     npt.assert_allclose(
-        pacf_vals[3:], 0.0, atol=0.1,
+        pacf_vals[2:], 0.0, atol=0.1,
         err_msg=(
             "Higher-order PACFs for AR(1) data should be near zero. "
-            f"Got max |pacf_vals[3:]| = {np.max(np.abs(pacf_vals[3:])):.6f}"
+            f"Got max |pacf_vals[2:]| = {np.max(np.abs(pacf_vals[2:])):.6f}"
         ),
     )
 
