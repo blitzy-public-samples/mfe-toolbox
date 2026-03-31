@@ -516,3 +516,174 @@ def test_pacf_cumsum_series(timeseries_fixture_dir) -> None:
         bounds, expected_bound, atol=ATOL,
         err_msg="Bounds mismatch for cumsum series",
     )
+
+
+# =========================================================================
+# Test 13: Edge Case — Column / Row Vector Input (2-D raveling)
+# =========================================================================
+
+def test_pacf_2d_vector_input() -> None:
+    """Verify ``pacf`` correctly handles ``(T, 1)`` and ``(1, T)`` shaped inputs.
+
+    Arrays with shape ``(T, 1)`` or ``(1, T)`` are valid vector
+    representations and should be automatically raveled to 1-D,
+    producing the same result as a flat 1-D array.
+
+    Covers: ``pacf.py`` line 139 — ``y = y.ravel()``.
+    """
+    rng = np.random.default_rng(42)
+    y_1d = rng.standard_normal(100)
+    lags = 10
+
+    # Reference result from flat 1-D input
+    pacf_ref, bounds_ref = pacf(y_1d, lags)
+
+    # Column vector (T, 1) — must be raveled and produce identical results
+    y_col = y_1d.reshape(-1, 1)
+    pacf_col, bounds_col = pacf(y_col, lags)
+    npt.assert_allclose(
+        pacf_col, pacf_ref, atol=ATOL,
+        err_msg="Column vector (T,1) should produce same PACF as 1-D input",
+    )
+    npt.assert_allclose(
+        bounds_col, bounds_ref, atol=ATOL,
+        err_msg="Column vector (T,1) should produce same bounds as 1-D input",
+    )
+
+    # Row vector (1, T) — must be raveled and produce identical results
+    y_row = y_1d.reshape(1, -1)
+    pacf_row, bounds_row = pacf(y_row, lags)
+    npt.assert_allclose(
+        pacf_row, pacf_ref, atol=ATOL,
+        err_msg="Row vector (1,T) should produce same PACF as 1-D input",
+    )
+    npt.assert_allclose(
+        bounds_row, bounds_ref, atol=ATOL,
+        err_msg="Row vector (1,T) should produce same bounds as 1-D input",
+    )
+
+
+# =========================================================================
+# Test 14: Edge Case — NaN and Inf Input Rejection
+# =========================================================================
+
+def test_pacf_nan_inf_input() -> None:
+    """Verify ``ValueError`` when ``y`` contains NaN or Inf values.
+
+    NaN and Inf values produce undefined autocovariances and must be
+    rejected before computation begins.  Tests NaN, +Inf, and -Inf
+    individually to confirm all non-finite values are caught.
+
+    Covers: ``pacf.py`` line 146 — NaN/Inf rejection guard.
+    """
+    rng = np.random.default_rng(42)
+    y_base = rng.standard_normal(100)
+
+    # NaN value embedded in valid data
+    y_nan = y_base.copy()
+    y_nan[50] = np.nan
+    with pytest.raises(ValueError, match="NaN or Inf"):
+        pacf(y_nan, 10)
+
+    # Positive infinity
+    y_inf = y_base.copy()
+    y_inf[25] = np.inf
+    with pytest.raises(ValueError, match="NaN or Inf"):
+        pacf(y_inf, 10)
+
+    # Negative infinity
+    y_neginf = y_base.copy()
+    y_neginf[75] = -np.inf
+    with pytest.raises(ValueError, match="NaN or Inf"):
+        pacf(y_neginf, 10)
+
+
+# =========================================================================
+# Test 15: Edge Case — Float Lags Validation
+# =========================================================================
+
+def test_pacf_float_lags_validation() -> None:
+    """Verify float ``lags`` handling: integer-valued accepted, fractional rejected.
+
+    A float that is exactly an integer (e.g., ``5.0``) is silently
+    converted to ``int`` and accepted.  Non-integer floats (e.g.,
+    ``5.5``) must raise ``ValueError``.  Float ``NaN`` and ``Inf``
+    are also rejected (Python's ``int()`` raises for these before
+    the explicit guard is reached).
+
+    Covers: ``pacf.py`` lines 151-153 — float lags validation branch.
+    """
+    rng = np.random.default_rng(42)
+    y = rng.standard_normal(100)
+
+    # Float that is exactly integer (5.0) — should be accepted
+    pacf_vals, bounds = pacf(y, 5.0)
+    assert pacf_vals.shape == (6,), (
+        "Float lags=5.0 should be accepted as integer; "
+        f"expected shape (6,), got {pacf_vals.shape}"
+    )
+
+    # Non-integer float (5.5) — must raise ValueError
+    with pytest.raises(ValueError, match="positive integer"):
+        pacf(y, 5.5)
+
+    # Float NaN as lags — rejected by int() conversion (ValueError)
+    with pytest.raises(ValueError):
+        pacf(y, float("nan"))
+
+    # Float Inf as lags — rejected by int() conversion (OverflowError)
+    with pytest.raises((ValueError, OverflowError)):
+        pacf(y, float("inf"))
+
+
+# =========================================================================
+# Test 16: Edge Case — Non-Integer Type Lags Rejection
+# =========================================================================
+
+def test_pacf_non_integer_type_lags() -> None:
+    """Verify ``ValueError`` when ``lags`` is a non-integer type.
+
+    String, list, ``None``, and other non-numeric types must be rejected
+    with a clear ``ValueError`` indicating that ``lags`` must be a
+    positive integer.
+
+    Covers: ``pacf.py`` line 155 — non-integer type rejection guard.
+    """
+    rng = np.random.default_rng(42)
+    y = rng.standard_normal(100)
+
+    # String lags
+    with pytest.raises(ValueError, match="positive integer"):
+        pacf(y, "10")
+
+    # List lags
+    with pytest.raises(ValueError, match="positive integer"):
+        pacf(y, [5])
+
+    # None lags
+    with pytest.raises(ValueError, match="positive integer"):
+        pacf(y, None)
+
+
+# =========================================================================
+# Test 17: Edge Case — Constant Series (Zero Variance)
+# =========================================================================
+
+def test_pacf_constant_series() -> None:
+    """Verify ``ValueError`` for constant series (zero variance after demeaning).
+
+    A constant array has ``gamma[0] == 0`` after mean removal, making
+    the PACF undefined.  Both integer- and float-valued constant arrays
+    must be rejected.
+
+    Covers: ``pacf.py`` line 186 — zero variance rejection guard.
+    """
+    # Constant float array
+    y_const = np.ones(100) * 5.0
+    with pytest.raises(ValueError, match="zero variance"):
+        pacf(y_const, 10)
+
+    # Constant integer array (converted to float64 internally)
+    y_int_const = np.full(50, 42)
+    with pytest.raises(ValueError, match="zero variance"):
+        pacf(y_int_const, 5)
